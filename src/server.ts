@@ -7,6 +7,7 @@ import { env } from "@/common/utils/envConfig"
 import { judiceRouter } from "@/api/routers/judiceRouter"
 import { lawsuitRouter } from "@/api/routers/lawsuitRouter"
 import { movimentationRouter } from "@/api/routers/movimentationRouter"
+import { notificationRouter } from "@/api/routers/notificationRouter"
 import { publicationRouter } from "@/api/routers/publicationRouter"
 
 const app: Express = express()
@@ -24,6 +25,7 @@ app.use("/judice", judiceRouter)
 app.use("/publications", publicationRouter)
 app.use("/lawsuits", lawsuitRouter)
 app.use("/movimentations", movimentationRouter)
+app.use("/notifications", notificationRouter)
 
 app.get("/ping", (_req, res) => {
   res.json({ message: "pong" })
