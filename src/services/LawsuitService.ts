@@ -14,10 +14,18 @@ type Lawsuit = z.infer<typeof selectLawsuitSchema>
 type NewLawsuit = z.infer<typeof insertLawsuitSchema>
 
 class LawsuitService {
+  async listLawsuits() {
+    return await db.query.lawsuit.findMany({ with: { client: true } })
+  }
+
   async getByCNJ(cnj: string) {
-    return await db.query.lawsuit.findFirst({
+    console.log("gettinbycnj")
+    const ls = await db.query.lawsuit.findFirst({
       where: (lawsuit, { eq }) => eq(lawsuit.cnj, cnj),
+      with: { client: true, movimentations: true },
     })
+    console.log("lawsuit", ls)
+    return ls
   }
 
   async create(newLawsuit: NewLawsuit) {
