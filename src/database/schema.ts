@@ -86,8 +86,8 @@ export const movimentationTypes = pgEnum("movimentation_types", [
 
 export const movimentation = pgTable("movimentations", {
   ...judiceObject(),
-  publicationId: id()
-    .references(() => publication.id)
+  lawsuitId: id()
+    .references(() => lawsuit.id)
     .notNull(),
   type: movimentationTypes().notNull(),
   expeditionDate: timestamp({
@@ -100,9 +100,9 @@ export const movimentation = pgTable("movimentations", {
 export const movimentationRelations = relations(
   movimentation,
   ({ many, one }) => ({
-    publication: one(publication, {
-      fields: [movimentation.publicationId],
-      references: [publication.id],
+    lawsuit: one(lawsuit, {
+      fields: [movimentation.lawsuitId],
+      references: [lawsuit.id],
     }),
     notifications: many(notification),
   }),

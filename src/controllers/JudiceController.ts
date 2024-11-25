@@ -16,7 +16,8 @@ class JudiceController {
 
   showPublication: RequestHandler = async (req, res) => {
     const judiceId = Number(req.params.judiceId)
-    const publication = await this.judiceService.getPublicationByJudiceId(judiceId)
+    const publication =
+      await this.judiceService.getPublicationByJudiceId(judiceId)
     return res.json(publication)
   }
 

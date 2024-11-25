@@ -3,7 +3,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import type { z } from "zod"
 
 import { db } from "@/database"
-import { publication } from "@/database/schema"
+import { lawsuit, publication } from "@/database/schema"
 
 import { eq } from "drizzle-orm"
 import JudiceService from "./JudiceService"
@@ -49,15 +49,21 @@ class PublicationsService {
   }
 
   async createPublication(newPublication: NewPublication) {
-    const [createdPublication] = await db.insert(publication).values(newPublication).returning()
+    const [createdPublication] = await db
+      .insert(publication)
+      .values(newPublication)
+      .returning()
 
     return createdPublication
   }
 
   async createPublicationByJudiceId(judiceId: number) {
-    const publicationData = await JudiceService.getPublicationByJudiceId(judiceId)
+    const publicationData =
+      await JudiceService.getPublicationByJudiceId(judiceId)
 
-    const lawsuit = await LawsuitService.getOrCreateByCNJ(publicationData.info[0].f_number)
+    const lawsuit = await LawsuitService.getOrCreateByCNJ(
+      publicationData.info[0].f_number,
+    )
 
     if (!lawsuit) {
       console.log("lawsuit not found")
@@ -65,7 +71,11 @@ class PublicationsService {
     }
 
     return this.createPublication({
-      expeditionDate: parse(publicationData.info[0].f_publisher_date, "dd/MM/yyyy", new Date()),
+      expeditionDate: parse(
+        publicationData.info[0].f_publisher_date,
+        "dd/MM/yyyy",
+        new Date(),
+      ),
       lawsuitId: lawsuit.id,
       judiceId,
     })
@@ -101,7 +111,9 @@ class PublicationsService {
   async fetchPublications() {
     const publications = await JudiceService.getPublications()
 
-    const promises = publications.map((p) => this.getOrCreateByJudiceId(p.judiceId))
+    const promises = publications.map((p) =>
+      this.getOrCreateByJudiceId(p.judiceId),
+    )
 
     const results = await Promise.allSettled(promises)
 
@@ -120,17 +132,25 @@ class PublicationsService {
   }
 
   async fetchClosedPublications() {
-    const judicePublications = new Set((await this.fetchPublications()).map((p) => p.judiceId))
+    const judicePublications = new Set(
+      (await this.fetchPublications()).map((p) => p.judiceId),
+    )
     const dbOpenPublications = await db.query.publication.findMany({
       where: ({ hasBeenTreated }, { eq }) => eq(hasBeenTreated, false),
+      with: { lawsuit: true },
     })
 
-    const closedPublications = dbOpenPublications.filter((p) => !judicePublications.has(p.judiceId))
+    const closedPublications = dbOpenPublications.filter(
+      (p) => !judicePublications.has(p.judiceId),
+    )
 
     return closedPublications
   }
 
-  async update(id: string, updatePublication: Partial<Omit<NewPublication, "id">>) {
+  async update(
+    id: string,
+    updatePublication: Partial<Omit<NewPublication, "id">>,
+  ) {
     const [updated] = await db
       .update(publication)
       .set({

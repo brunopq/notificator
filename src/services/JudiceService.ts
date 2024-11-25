@@ -17,9 +17,9 @@ async function createClient() {
 
   await client.get("https://managerapia.officeadv.com.br/csrf-token")
 
-  const xsrfTokenCookie = (await jar.getCookies("https://managerapia.officeadv.com.br")).find(
-    (cookie) => cookie.key === "XSRF-TOKEN",
-  )
+  const xsrfTokenCookie = (
+    await jar.getCookies("https://managerapia.officeadv.com.br")
+  ).find((cookie) => cookie.key === "XSRF-TOKEN")
 
   if (!xsrfTokenCookie) {
     throw new Error("XSRF cookie not found in axios instance")
@@ -35,7 +35,9 @@ async function createClient() {
     tenant: env.JUDICE_TENANT,
   })
 
-  const acessoResponse = await client.get("https://managerapia.officeadv.com.br/office/login/gerar-acesso")
+  const acessoResponse = await client.get(
+    "https://managerapia.officeadv.com.br/office/login/gerar-acesso",
+  )
 
   // make request for the php session token
   await client.get(acessoResponse.data.retorno.url)
@@ -149,7 +151,9 @@ class JudiceService {
   }
 
   async getAudienciasByJudiceId(id: number) {
-    const { data } = await this.httpClient.get(`https://legala.officeadv.com.br/pgj/execution-hearings/${id}`)
+    const { data } = await this.httpClient.get(
+      `https://legala.officeadv.com.br/pgj/execution-hearings/${id}`,
+    )
 
     const $ = cheerio.load(data)
 
@@ -160,7 +164,13 @@ class JudiceService {
         $(el).extract({
           date: {
             selector: "div.calendar",
-            value: (el) => parse($(el).text(), "ddMMM/yyyyHH:mm", TZDate.tz("America/Sao_Paulo"), { locale: ptBR }),
+            value: (el) =>
+              parse(
+                $(el).text(),
+                "ddMMM/yyyyHH:mm",
+                TZDate.tz("America/Sao_Paulo"),
+                { locale: ptBR },
+              ),
           },
           details: "div.details",
           type: {
@@ -290,7 +300,9 @@ class JudiceService {
 
     const parsed = clientSearchSchema.parse(res.data)
 
-    const $ = cheerio.load(parsed.info)
+    // api returns with a weird encoding, and it will break the database
+    // if not treated
+    const $ = cheerio.load(Buffer.from(parsed.info).toString())
 
     const { lines } = $.extract({
       lines: [{ selector: ".client-bar-parent > div" }],
@@ -300,7 +312,7 @@ class JudiceService {
       .flatMap((s) => [...s.matchAll(extractKeyValuesRegex)])
       .reduce(
         (acc, m) => {
-          acc[m[1].trim().toLocaleLowerCase()] = m[2].trim()
+          acc[m[1].trim().toLocaleLowerCase()] = String(m[2].trim())
           return acc
         },
         {} as Record<string, unknown>,
