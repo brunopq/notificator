@@ -1,8 +1,10 @@
 import axios from "axios"
 
+import { env } from "@/common/utils/envConfig"
+
 class WhatsappService {
   private httpClient = axios.create({
-    baseURL: "http://localhost:3000/whatsapp",
+    baseURL: env.WHATSAPP_SERVICE_URL,
   })
   async isOnWhatsapp(phoneNumber: string) {
     const res = await this.httpClient.post("/isOnWhatsapp", {

@@ -269,11 +269,6 @@ class JudiceService {
       }),
     )
 
-    console.log("headers:")
-    console.log(res.headers)
-    console.log("request:")
-    console.log(res.request)
-
     const parsed = publicationsSearchSchema.parse(res.data)
 
     return parsed.data.map(formatPublication)
