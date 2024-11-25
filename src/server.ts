@@ -5,8 +5,9 @@ import errorHandler from "@/common/middleware/errorHandler"
 import { env } from "@/common/utils/envConfig"
 
 import { judiceRouter } from "@/api/routers/judiceRouter"
+import { lawsuitRouter } from "@/api/routers/lawsuitRouter"
+import { movimentationRouter } from "@/api/routers/movimentationRouter"
 import { publicationRouter } from "@/api/routers/publicationRouter"
-import { lawsuitRouter } from "./api/routers/lawsuitRouter"
 
 const app: Express = express()
 
@@ -20,8 +21,9 @@ app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }))
 
 // Routes
 app.use("/judice", judiceRouter)
-app.use("/publications/", publicationRouter)
+app.use("/publications", publicationRouter)
 app.use("/lawsuits", lawsuitRouter)
+app.use("/movimentations", movimentationRouter)
 
 app.get("/ping", (_req, res) => {
   res.json({ message: "pong" })
