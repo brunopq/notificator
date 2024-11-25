@@ -48,6 +48,18 @@ class NotificationController {
 
     return res.json(notification)
   }
+
+  send: RequestHandler = async (req, res) => {
+    const notificationId = req.params.id
+
+    if (!notificationId) {
+      return res.status(400).json({ message: "Notification ID is required" })
+    }
+
+    const notification = await this.notificationService.send(notificationId)
+
+    return res.json(notification)
+  }
 }
 
 export default new NotificationController(NotificationService)

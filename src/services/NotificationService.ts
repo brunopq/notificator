@@ -20,6 +20,12 @@ type Notification = z.infer<typeof selectNotificationSchema>
 type NewNotification = z.infer<typeof insertNotificationSchema>
 
 class NotificationService {
+  private WhatsappService: typeof WhatsappService
+
+  constructor(whatsappService: typeof WhatsappService) {
+    this.WhatsappService = whatsappService
+  }
+
   async index() {
     return await db.query.notification.findMany({
       with: {
@@ -50,12 +56,20 @@ class NotificationService {
       with: { client: true },
     })
 
-    if (!noti || noti.sent) {
-      throw new Error("Notification not found or already sent")
+    if (!noti) {
+      throw new Error("Notification not found")
     }
 
-    if (!noti.client || noti.client.phones.length === 0) {
+    if (noti.sent) {
+      throw new Error("Notification already sent")
+    }
+
+    if (!noti.client) {
       throw new Error("Client not found or without phones")
+    }
+
+    if (noti.client.phones.length === 0) {
+      throw new Error("Client has no phones")
     }
 
     const phone = "51 98022-3200"
@@ -78,4 +92,4 @@ class NotificationService {
   }
 }
 
-export default new NotificationService()
+export default new NotificationService(WhatsappService)
