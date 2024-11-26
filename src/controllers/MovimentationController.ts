@@ -1,3 +1,4 @@
+import { BadRequestError } from "@/common/errors/HTTPError"
 import MovimentationService, {
   insertMovimentationSchema,
 } from "@/services/MovimentationService"
@@ -13,20 +14,20 @@ class MovimentationController {
   index: RequestHandler = async (_req, res) => {
     const movimentations = await this.movimentationService.getMovimentations()
 
-    return res.json(movimentations)
+    res.json(movimentations)
   }
 
   show: RequestHandler = async (req, res) => {
     const movimentationId = req.params.id
 
     if (!movimentationId) {
-      return res.status(400).json({ message: "Movimentation ID is required" })
+      throw new BadRequestError("Movimentation ID is required")
     }
 
     const movimentation =
       await this.movimentationService.getFullMovimentationById(movimentationId)
 
-    return res.json(movimentation)
+    res.json(movimentation)
   }
 
   create: RequestHandler = async (req, res) => {
@@ -36,24 +37,25 @@ class MovimentationController {
       insertMovimentationSchema.safeParse(newMovimentation)
 
     if (!parsedMovimentation.success) {
-      return res.status(400).json({
+      throw new BadRequestError("Invalid movimentation data")
+      /* return res.status(400).json({
         message: "Invalid movimentation data",
         errors: parsedMovimentation.error.errors,
-      })
+      }) */
     }
 
     const movimentation = await this.movimentationService.createMovimentation(
       parsedMovimentation.data,
     )
 
-    return res.json(movimentation)
+    res.json(movimentation)
   }
 
   fetch: RequestHandler = async (_req, res) => {
     const movimentation =
       await this.movimentationService.fetchNewMovimentations()
 
-    return res.json(movimentation)
+    res.json(movimentation)
   }
 }
 

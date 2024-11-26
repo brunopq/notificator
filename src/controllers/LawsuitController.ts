@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express"
 
+import { BadRequestError } from "@/common/errors/HTTPError"
 import LawsuitService from "@/services/LawsuitService"
 
 class LawsuitController {
@@ -11,23 +12,23 @@ class LawsuitController {
 
   index: RequestHandler = async (req, res) => {
     const lawsuits = await this.lawsuitService.listLawsuits()
-    return res.json(lawsuits)
+    res.json(lawsuits)
   }
 
   show: RequestHandler = async (req, res) => {
     const cnj = req.params.cnj
 
     if (!cnj) {
-      return res.status(400).json({ error: "CNJ is required" })
+      throw new BadRequestError("CNJ is required")
     }
 
     const lawsuit = await this.lawsuitService.getByCNJ(cnj)
-    return res.json(lawsuit)
+    res.json(lawsuit)
   }
 
   create: RequestHandler = async (req, res) => {
     const lawsuit = await this.lawsuitService.create(req.body)
-    return res.status(201).json(lawsuit)
+    res.status(201).json(lawsuit)
   }
 }
 

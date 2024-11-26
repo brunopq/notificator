@@ -1,7 +1,10 @@
 import cors from "cors"
 import express, { type Express } from "express"
 
-import errorHandler from "@/common/middleware/errorHandler"
+import {
+  handleError,
+  unexpectedRequest,
+} from "@/common/middleware/errorHandler"
 import { env } from "@/common/utils/envConfig"
 
 import { judiceRouter } from "@/api/routers/judiceRouter"
@@ -32,6 +35,7 @@ app.get("/ping", (_req, res) => {
 })
 
 // Error handlers
-app.use(errorHandler())
+app.use(unexpectedRequest)
+app.use(handleError)
 
 export { app }

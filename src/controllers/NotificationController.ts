@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express"
 
+import { BadRequestError, NotFoundError } from "@/common/errors/HTTPError"
 import NotificationService, {
   insertNotificationSchema,
 } from "@/services/NotificationService"
@@ -14,19 +15,25 @@ class NotificationController {
   index: RequestHandler = async (_req, res) => {
     const notifications = await this.notificationService.index()
 
-    return res.json(notifications)
+    res.json(notifications)
   }
 
-  show: RequestHandler = async (req, res) => {
+  show: RequestHandler = async (req, res, next) => {
     const notificationId = req.params.id
 
     if (!notificationId) {
-      return res.status(400).json({ message: "Notification ID is required" })
+      throw new BadRequestError("Notification ID is required")
     }
 
     const notification = await this.notificationService.show(notificationId)
 
-    return res.json(notification)
+    if (!notification) {
+      throw new NotFoundError(
+        `Notification with ID ${notificationId} not found`,
+      )
+    }
+
+    res.json(notification)
   }
 
   create: RequestHandler = async (req, res) => {
@@ -36,29 +43,30 @@ class NotificationController {
       insertNotificationSchema.safeParse(newNotification)
 
     if (!parsedNotification.success) {
-      return res.status(400).json({
+      throw new BadRequestError("Invalid notification data")
+      /* res.status(400).json({
         message: "Invalid notification data",
         errors: parsedNotification.error.errors,
-      })
+      }) */
     }
 
     const notification = await this.notificationService.create(
       parsedNotification.data,
     )
 
-    return res.json(notification)
+    res.json(notification)
   }
 
   send: RequestHandler = async (req, res) => {
     const notificationId = req.params.id
 
     if (!notificationId) {
-      return res.status(400).json({ message: "Notification ID is required" })
+      throw new BadRequestError("Notification ID is required")
     }
 
     const notification = await this.notificationService.send(notificationId)
 
-    return res.json(notification)
+    res.json(notification)
   }
 }
 
