@@ -39,20 +39,10 @@ class NotificationController {
   create: RequestHandler = async (req, res) => {
     const newNotification = req.body
 
-    const parsedNotification =
-      insertNotificationSchema.safeParse(newNotification)
+    const parsedNotification = insertNotificationSchema.parse(newNotification)
 
-    if (!parsedNotification.success) {
-      throw new BadRequestError("Invalid notification data")
-      /* res.status(400).json({
-        message: "Invalid notification data",
-        errors: parsedNotification.error.errors,
-      }) */
-    }
-
-    const notification = await this.notificationService.create(
-      parsedNotification.data,
-    )
+    const notification =
+      await this.notificationService.create(parsedNotification)
 
     res.json(notification)
   }

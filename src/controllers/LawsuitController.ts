@@ -23,6 +23,11 @@ class LawsuitController {
     }
 
     const lawsuit = await this.lawsuitService.getByCNJ(cnj)
+
+    if (!lawsuit) {
+      throw new BadRequestError("Lawsuit not found")
+    }
+
     res.json(lawsuit)
   }
 

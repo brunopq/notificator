@@ -34,19 +34,10 @@ class MovimentationController {
     const newMovimentation = req.body
 
     const parsedMovimentation =
-      insertMovimentationSchema.safeParse(newMovimentation)
+      insertMovimentationSchema.parse(newMovimentation)
 
-    if (!parsedMovimentation.success) {
-      throw new BadRequestError("Invalid movimentation data")
-      /* return res.status(400).json({
-        message: "Invalid movimentation data",
-        errors: parsedMovimentation.error.errors,
-      }) */
-    }
-
-    const movimentation = await this.movimentationService.createMovimentation(
-      parsedMovimentation.data,
-    )
+    const movimentation =
+      await this.movimentationService.createMovimentation(parsedMovimentation)
 
     res.json(movimentation)
   }

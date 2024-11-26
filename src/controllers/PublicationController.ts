@@ -44,19 +44,10 @@ class PublicationController {
   }
 
   create: RequestHandler = async (req, res) => {
-    const parsedPublication = insertPublicationSchema.safeParse(req.body)
+    const parsedPublication = insertPublicationSchema.parse(req.body)
 
-    if (!parsedPublication.success) {
-      throw new BadRequestError("Invalid publication data")
-      /* return res.status(400).json({
-        message: "Invalid publication data",
-        errors: parsedPublication.error.errors,
-      }) */
-    }
-
-    const publication = await this.publicationsService.createPublication(
-      parsedPublication.data,
-    )
+    const publication =
+      await this.publicationsService.createPublication(parsedPublication)
 
     res.json(publication)
   }

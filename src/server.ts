@@ -2,8 +2,10 @@ import cors from "cors"
 import express, { type Express } from "express"
 
 import {
-  handleError,
-  unexpectedRequest,
+  HTTPErrorHandler,
+  unexpectedErrorHandler,
+  unexpectedRequestHandler,
+  zodErrorHandler,
 } from "@/common/middleware/errorHandler"
 import { env } from "@/common/utils/envConfig"
 
@@ -35,7 +37,10 @@ app.get("/ping", (_req, res) => {
 })
 
 // Error handlers
-app.use(unexpectedRequest)
-app.use(handleError)
+app.use(unexpectedRequestHandler)
+app.use(HTTPErrorHandler)
+app.use(zodErrorHandler)
+
+app.use(unexpectedErrorHandler) // should be last
 
 export { app }
