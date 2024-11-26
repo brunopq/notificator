@@ -69,8 +69,6 @@ class MovimentationService {
     const closedPublications =
       await PublicationsService.fetchClosedPublications()
 
-    console.log(`${closedPublications.length} closed publications fetched`)
-
     const promises = closedPublications.map((p, i) =>
       (async () => {
         const audiencias = await JudiceService.getAudienciasByJudiceId(
@@ -88,7 +86,6 @@ class MovimentationService {
           !createdAudiencia.judiceId ||
           !createdAudiencia.lastModification
         ) {
-          console.log(`no movimentation found for publication ${p.id}`)
           return null
         }
 
@@ -97,7 +94,6 @@ class MovimentationService {
         )
 
         if (dbMovimentation) {
-          console.log(`movimentation ${dbMovimentation.id} already exists`)
           return null
         }
 
@@ -111,8 +107,6 @@ class MovimentationService {
 
         // sets the movimentation id
         closedPublications[i].movimentationId = newMovimentation.id
-
-        console.log(`movimentation ${newMovimentation.id} created`)
 
         return newMovimentation
       })(),

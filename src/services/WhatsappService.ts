@@ -1,34 +1,59 @@
-import axios from "axios"
+import axios, { isAxiosError } from "axios"
+import { z } from "zod"
 
 import { env } from "@/common/utils/envConfig"
+
+const whatsappNumbersResponseSchema = z.array(
+  z.object({
+    jid: z.string(),
+    exists: z.boolean(),
+  }),
+)
 
 class WhatsappService {
   private httpClient = axios.create({
     baseURL: env.WHATSAPP_SERVICE_URL,
+    headers: { authorization: `bearer ${env.WHATSAPP_INSTANCE_TOKEN}` },
   })
   async isOnWhatsapp(phoneNumber: string) {
-    const res = await this.httpClient.post("/isOnWhatsapp", {
-      number: phoneNumber,
-    })
+    const res = await this.httpClient.post(
+      `/chat/whatsappNumbers/${env.WHATSAPP_INSTANCE_ID}`,
+      { number: phoneNumber },
+    )
 
-    if (res.data.exists) {
-      return res.data.jid
+    const parsed = whatsappNumbersResponseSchema.safeParse(res.data)
+
+    if (!parsed.success) {
+      console.log("Could not parse /chat/whatsappNumbers response")
+      return false
     }
 
-    return false
+    const numbers = parsed.data
+
+    if (numbers.length === 0 || !numbers[0].exists) {
+      return false
+    }
+
+    return true
   }
 
   async sendMessage(phoneNumber: string, message: string) {
-    const res = await this.httpClient.post("/sendMessage", {
-      number: phoneNumber,
-      message,
-    })
+    try {
+      const res = await this.httpClient.post(
+        `/message/sendText/${env.WHATSAPP_INSTANCE_ID}`,
+        {
+          number: "5551980223200@s.whatsapp.net" /* phoneNumber */,
+          textMessage: { text: message },
+        },
+      )
 
-    if (res.status !== 200) {
-      throw new Error("Message not sent")
+      return res.data
+    } catch (e) {
+      if (isAxiosError(e)) {
+        console.log("Error sending message")
+        console.log(e.response?.data)
+      }
     }
-
-    return res.data
   }
 }
 

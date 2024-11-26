@@ -12,6 +12,8 @@ export const env = cleanEnv(process.env, {
   PORT: port({ devDefault: testOnly(3000) }),
   CORS_ORIGIN: str(),
   WHATSAPP_SERVICE_URL: str(),
+  WHATSAPP_INSTANCE_ID: str(),
+  WHATSAPP_INSTANCE_TOKEN: str(),
   DB_HOST: str(),
   DB_PORT: num(),
   DB_USER: str(),
