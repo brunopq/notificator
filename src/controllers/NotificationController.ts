@@ -56,6 +56,12 @@ class NotificationController {
 
     const notification = await this.notificationService.send(notificationId)
 
+    if (!notification) {
+      throw new NotFoundError(
+        `Notification with ID ${notificationId} not found`,
+      )
+    }
+
     res.json(notification)
   }
 }

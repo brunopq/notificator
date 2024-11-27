@@ -35,10 +35,16 @@ class NotificationService {
   }
 
   async show(id: string) {
-    return await db.query.notification.findFirst({
+    const notification = await db.query.notification.findFirst({
       where: (n, { eq }) => eq(n.id, id),
       with: { client: true, movimentation: true },
     })
+
+    if (!notification) {
+      return undefined
+    }
+
+    return notification
   }
 
   async create(newNotification: NewNotification) {
@@ -74,7 +80,10 @@ class NotificationService {
 
     const phone = "51 98022-3200"
 
-    const sentMessage = await WhatsappService.sendMessage(phone, noti.message)
+    const sentMessage = await this.WhatsappService.sendMessage(
+      phone,
+      noti.message,
+    )
 
     console.log(sentMessage)
 
