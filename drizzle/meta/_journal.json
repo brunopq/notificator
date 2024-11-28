@@ -15,6 +15,13 @@
       "when": 1732539566879,
       "tag": "0001_next_red_ghost",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1732796627115,
+      "tag": "0002_silky_retro_girl",
+      "breakpoints": true
     }
   ]
 }

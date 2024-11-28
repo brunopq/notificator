@@ -83,6 +83,7 @@ class MovimentationService {
 
         if (
           !createdAudiencia ||
+          !createdAudiencia.date ||
           !createdAudiencia.judiceId ||
           !createdAudiencia.lastModification
         ) {
