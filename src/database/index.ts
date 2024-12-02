@@ -1,3 +1,4 @@
+import type { DrizzleConfig } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/postgres-js"
 import { migrate } from "drizzle-orm/postgres-js/migrator"
 import postgres from "postgres"
@@ -12,12 +13,13 @@ const connection = {
   password: env.DB_PASS,
   database: env.DB_NAME,
   port: env.DB_PORT,
-}
+  // biome-ignore lint/complexity/noBannedTypes: <explanation>
+} satisfies postgres.Options<{}>
 
 const drizzleConfig = {
   schema,
   casing: "snake_case",
-} as const
+} satisfies DrizzleConfig<typeof schema>
 
 const migration = postgres({ ...connection, max: 1 })
 const sql = postgres({ ...connection })

@@ -69,6 +69,8 @@ class MovimentationService {
     const closedPublications =
       await PublicationsService.fetchClosedPublications()
 
+    console.log(`${closedPublications.length} closed publications`)
+
     const promises = closedPublications.map((p, i) =>
       (async () => {
         const audiencias = await JudiceService.getAudienciasByJudiceId(

@@ -1,0 +1,367 @@
+{
+  "id": "4bec6668-60a9-4eb4-91d1-ff3280fd8aed",
+  "prevId": "21a533d1-f6eb-4e37-a6a3-100dc9ead018",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.clients": {
+      "name": "clients",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(12)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "judice_id": {
+          "name": "judice_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cpf": {
+          "name": "cpf",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phones": {
+          "name": "phones",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "clients_judiceId_unique": {
+          "name": "clients_judiceId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "judice_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.lawsuits": {
+      "name": "lawsuits",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(12)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "judice_id": {
+          "name": "judice_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cnj": {
+          "name": "cnj",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "char(12)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lawsuits_client_id_clients_id_fk": {
+          "name": "lawsuits_client_id_clients_id_fk",
+          "tableFrom": "lawsuits",
+          "tableTo": "clients",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "lawsuits_judiceId_unique": {
+          "name": "lawsuits_judiceId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "judice_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.movimentations": {
+      "name": "movimentations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(12)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "judice_id": {
+          "name": "judice_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lawsuit_id": {
+          "name": "lawsuit_id",
+          "type": "char(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "movimentation_types",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expedition_date": {
+          "name": "expedition_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "final_date": {
+          "name": "final_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "movimentations_lawsuit_id_lawsuits_id_fk": {
+          "name": "movimentations_lawsuit_id_lawsuits_id_fk",
+          "tableFrom": "movimentations",
+          "tableTo": "lawsuits",
+          "columnsFrom": [
+            "lawsuit_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "movimentations_judiceId_unique": {
+          "name": "movimentations_judiceId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "judice_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notifications": {
+      "name": "notifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(12)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "movimentation_id": {
+          "name": "movimentation_id",
+          "type": "char(12)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "char(12)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sent": {
+          "name": "sent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recieved": {
+          "name": "recieved",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "notifications_movimentation_id_movimentations_id_fk": {
+          "name": "notifications_movimentation_id_movimentations_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "movimentations",
+          "columnsFrom": [
+            "movimentation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "notifications_client_id_clients_id_fk": {
+          "name": "notifications_client_id_clients_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "clients",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.publications": {
+      "name": "publications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "char(12)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "judice_id": {
+          "name": "judice_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lawsuit_id": {
+          "name": "lawsuit_id",
+          "type": "char(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "movimentation_id": {
+          "name": "movimentation_id",
+          "type": "char(12)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expedition_date": {
+          "name": "expedition_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "has_been_treated": {
+          "name": "has_been_treated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "publications_lawsuit_id_lawsuits_id_fk": {
+          "name": "publications_lawsuit_id_lawsuits_id_fk",
+          "tableFrom": "publications",
+          "tableTo": "lawsuits",
+          "columnsFrom": [
+            "lawsuit_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "publications_judiceId_unique": {
+          "name": "publications_judiceId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "judice_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.lawsuit_status": {
+      "name": "lawsuit_status",
+      "schema": "public",
+      "values": [
+        "NÃO INICIADO",
+        "ATIVO",
+        "ENCERRADO"
+      ]
+    },
+    "public.movimentation_types": {
+      "name": "movimentation_types",
+      "schema": "public",
+      "values": [
+        "AUDIENCIA",
+        "PERICIA"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

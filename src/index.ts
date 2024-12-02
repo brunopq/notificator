@@ -53,9 +53,14 @@ const job = CronJob.from({
 
       console.log(`Notification ${notification.id} created`)
 
-      const sent = await NotificationService.send(notification.id)
+      try {
+        const sent = await NotificationService.send(notification.id)
 
-      console.log("Sent: ", sent)
+        console.log("Sent: ", sent)
+      } catch (e) {
+        console.log("Error sending notification")
+        console.error(e)
+      }
     }
 
     console.log("Job executed")

@@ -129,7 +129,7 @@ export const lawsuitStatus = pgEnum("lawsuit_status", [
   "ENCERRADO",
 ])
 
-export const lawsuit = pgTable("lawsuit", {
+export const lawsuit = pgTable("lawsuits", {
   ...judiceObject(),
   cnj: text().notNull(),
   clientId: id()
