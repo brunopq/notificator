@@ -6,6 +6,7 @@ import { lawsuit } from "@/database/schema"
 
 import ClientService from "./ClientService"
 import JudiceService from "./JudiceService"
+import MovimentationService from "./MovimentationService"
 
 const selectLawsuitSchema = createSelectSchema(lawsuit)
 const insertLawsuitSchema = createInsertSchema(lawsuit)
@@ -26,6 +27,12 @@ class LawsuitService {
     })
     console.log("lawsuit", ls)
     return ls
+  }
+
+  async getByJudiceId(judiceId: number) {
+    return await db.query.lawsuit.findFirst({
+      where: (lawsuit, { eq }) => eq(lawsuit.judiceId, judiceId),
+    })
   }
 
   async create(newLawsuit: NewLawsuit) {
@@ -53,17 +60,28 @@ class LawsuitService {
       return null
     }
 
-    const dbLawsuitJudiceId = await db.query.lawsuit.findFirst({
-      where: ({ judiceId }, { eq }) => eq(judiceId, judiceLawsuit.f_id),
-    })
+    return this.getOrCreateByJudiceId(judiceLawsuit.f_id)
+  }
+
+  async getOrCreateByJudiceId(judiceId: number) {
+    const dbLawsuitJudiceId = await this.getByJudiceId(judiceId)
 
     if (dbLawsuitJudiceId) {
-      console.log(`Lawsuit with judice id ${judiceLawsuit.f_id} already exists`)
-      return null
+      console.log(`Lawsuit with judice id ${judiceId} already exists`)
+      return dbLawsuitJudiceId
+    }
+
+    const judiceLawsuit =
+      await JudiceService.lawsuitWithMovimentationsByJudiceId(judiceId)
+
+    console.log(judiceLawsuit)
+
+    if (!judiceLawsuit) {
+      throw new Error("Judice lawsuit not found")
     }
 
     const client = await ClientService.getOrCreateByJudiceId(
-      judiceLawsuit.f_client,
+      judiceLawsuit.clientId,
     )
 
     if (!client) {
@@ -72,12 +90,38 @@ class LawsuitService {
     }
 
     const createdLawsuit = await this.create({
-      judiceId: judiceLawsuit.f_id,
+      judiceId: judiceId,
       clientId: client.id,
-      cnj,
+      cnj: judiceLawsuit.cnj,
     })
 
-    console.log(`Lawsuit ${cnj} created!`)
+    console.log(`Lawsuit ${judiceLawsuit.cnj} created!`)
+
+    console.log(
+      `Found  ${judiceLawsuit.movimentations.length} movimentations for lawsuit ${judiceLawsuit.cnj}`,
+    )
+
+    for (const movimentation of judiceLawsuit.movimentations) {
+      if (
+        !movimentation.date ||
+        !movimentation.lastModification ||
+        !movimentation.type ||
+        !movimentation.judiceId
+      ) {
+        console.log("Invalid movimentation", movimentation)
+        continue
+      }
+
+      const newMov = await MovimentationService.createMovimentation({
+        judiceId: movimentation.judiceId,
+        expeditionDate: movimentation.lastModification,
+        finalDate: movimentation.date,
+        type: movimentation.type === "audiencia" ? "AUDIENCIA" : "PERICIA",
+        lawsuitId: createdLawsuit.id,
+      })
+
+      console.log(`Movimentation ${newMov.id} created!`)
+    }
 
     return createdLawsuit
   }

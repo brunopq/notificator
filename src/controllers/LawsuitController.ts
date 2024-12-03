@@ -35,6 +35,38 @@ class LawsuitController {
     const lawsuit = await this.lawsuitService.create(req.body)
     res.status(201).json(lawsuit)
   }
+
+  showJudiceId: RequestHandler = async (req, res) => {
+    const judiceId = Number(req.params.judiceId)
+
+    if (!judiceId) {
+      throw new BadRequestError("Judice ID is required")
+    }
+
+    const lawsuit = await this.lawsuitService.getByJudiceId(judiceId)
+
+    if (!lawsuit) {
+      throw new BadRequestError("Lawsuit not found")
+    }
+
+    res.json(lawsuit)
+  }
+
+  fetchJudiceId: RequestHandler = async (req, res) => {
+    const judiceId = Number(req.params.judiceId)
+
+    if (!judiceId) {
+      throw new BadRequestError("Judice ID is required")
+    }
+
+    const lawsuit = await this.lawsuitService.getOrCreateByJudiceId(judiceId)
+
+    if (!lawsuit) {
+      throw new BadRequestError("Lawsuit not found")
+    }
+
+    res.json(lawsuit)
+  }
 }
 
 export default new LawsuitController(LawsuitService)

@@ -150,11 +150,7 @@ class JudiceService {
     this.httpClient = client
   }
 
-  async getAudienciasByJudiceId(id: number) {
-    const { data } = await this.httpClient.get(
-      `https://legala.officeadv.com.br/pgj/execution-hearings/${id}`,
-    )
-
+  private async extractAudiencias(data: string) {
     const $ = cheerio.load(data)
 
     const res = $("div.process-list li:even")
@@ -223,6 +219,46 @@ class JudiceService {
     return arr
   }
 
+  private async extractLawsuitInfo(data: string) {
+    const $ = cheerio.load(data)
+
+    const client = $("h2.block > a").attr("href")
+    const clientId = Number(client?.match(/\d+$/)?.[0])
+
+    const { lines } = $.extract({
+      lines: [{ selector: "div.well" }],
+    })
+
+    const info = lines
+      .flatMap((s) => [...s.matchAll(extractKeyValuesRegex)])
+      .reduce(
+        (acc, m) => {
+          acc[m[1].trim().toLocaleLowerCase()] = String(m[2].trim())
+          return acc
+        },
+        {} as Record<string, unknown>,
+      )
+
+    const cnj = String(info.cnj)
+
+    if (!cnj) {
+      throw new Error("CNJ not found")
+    }
+
+    return {
+      clientId,
+      cnj,
+    }
+  }
+
+  async getAudienciasByJudiceId(id: number) {
+    const { data } = await this.httpClient.get(
+      `https://legala.officeadv.com.br/pgj/execution-hearings/${id}`,
+    )
+
+    return await this.extractAudiencias(data)
+  }
+
   async searchLawsuitByCNJ(cnj: string) {
     const searchResponse = await this.httpClient.post(
       "https://legala.officeadv.com.br/pgj/search/methodAjaxGetSearchProcess",
@@ -241,6 +277,21 @@ class JudiceService {
     }
 
     return parsedResponse.data[0]
+  }
+
+  async lawsuitWithMovimentationsByJudiceId(judiceId: number) {
+    const { data } = await this.httpClient.get(
+      `https://legala.officeadv.com.br/pgj/execution-hearings/${judiceId}`,
+    )
+
+    const movimentations = await this.extractAudiencias(data)
+    const lawsuitInfo = await this.extractLawsuitInfo(data)
+
+    return {
+      ...lawsuitInfo,
+      judiceId,
+      movimentations,
+    }
   }
 
   async getAudienciasByCNJ(cnj: string) {
@@ -295,9 +346,7 @@ class JudiceService {
 
     const parsed = clientSearchSchema.parse(res.data)
 
-    // api returns with a weird encoding, and it will break the database
-    // if not treated
-    const $ = cheerio.load(Buffer.from(parsed.info).toString())
+    const $ = cheerio.load(parsed.info)
 
     const { lines } = $.extract({
       lines: [{ selector: ".client-bar-parent > div" }],
