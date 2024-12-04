@@ -19,7 +19,6 @@
     "axios-cookiejar-support": "^5.0.3",
     "cheerio": "^1.0.0",
     "cors": "^2.8.5",
-    "cron": "^3.2.1",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.28.1",
@@ -44,7 +43,11 @@
     "vitest": "^2.1.6"
   },
   "tsup": {
-    "entry": ["src", "!src/**/__tests__/**", "!src/**/*.test.*"],
+    "entry": [
+      "src",
+      "!src/**/__tests__/**",
+      "!src/**/*.test.*"
+    ],
     "splitting": false,
     "sourcemap": true,
     "format": "esm",
