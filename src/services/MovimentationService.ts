@@ -96,6 +96,8 @@ class MovimentationService {
           createdAudiencia.judiceId,
         )
 
+        // don't create movimentation twice
+        // don't return it to not notify the client twice
         if (dbMovimentation) {
           return null
         }

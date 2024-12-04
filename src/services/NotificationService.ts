@@ -16,7 +16,7 @@ export const insertNotificationSchema = z.object({
   recieved: z.boolean().default(false),
 })
 
-type Notification = z.infer<typeof selectNotificationSchema>
+export type Notification = z.infer<typeof selectNotificationSchema>
 type NewNotification = z.infer<typeof insertNotificationSchema>
 
 class NotificationService {

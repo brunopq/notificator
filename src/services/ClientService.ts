@@ -26,11 +26,9 @@ class ClientService {
   }
 
   async getOrCreateByJudiceId(id: number) {
-    console.log(`Searching for client with id: ${id}`)
     const dbClient = await this.getByJudiceId(id)
 
     if (dbClient) {
-      console.log(`Client ${id} found in database`)
       return dbClient
     }
 
@@ -49,7 +47,6 @@ class ClientService {
       phones,
     })
 
-    console.log(`Client ${id} created!`)
     return createdClient
   }
 

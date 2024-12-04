@@ -45,18 +45,15 @@ class LawsuitService {
   }
 
   async getOrCreateByCNJ(cnj: string) {
-    console.log(`Searching for lawsuit with cnj: ${cnj}`)
     const dbLawsuit = await this.getByCNJ(cnj)
 
     if (dbLawsuit) {
-      console.log(`Lawsuit ${cnj} found in database`)
       return dbLawsuit
     }
 
     const judiceLawsuit = await JudiceService.searchLawsuitByCNJ(cnj)
 
     if (!judiceLawsuit) {
-      console.log("lawsuit not found in judice")
       return null
     }
 
@@ -67,7 +64,6 @@ class LawsuitService {
     const dbLawsuitJudiceId = await this.getByJudiceId(judiceId)
 
     if (dbLawsuitJudiceId) {
-      console.log(`Lawsuit with judice id ${judiceId} already exists`)
       return dbLawsuitJudiceId
     }
 
@@ -85,7 +81,6 @@ class LawsuitService {
     )
 
     if (!client) {
-      console.log("client not found when creating lawsuit")
       return null
     }
 
@@ -94,12 +89,6 @@ class LawsuitService {
       clientId: client.id,
       cnj: judiceLawsuit.cnj,
     })
-
-    console.log(`Lawsuit ${judiceLawsuit.cnj} created!`)
-
-    console.log(
-      `Found  ${judiceLawsuit.movimentations.length} movimentations for lawsuit ${judiceLawsuit.cnj}`,
-    )
 
     for (const movimentation of judiceLawsuit.movimentations) {
       if (
@@ -119,8 +108,6 @@ class LawsuitService {
         type: movimentation.type === "audiencia" ? "AUDIENCIA" : "PERICIA",
         lawsuitId: createdLawsuit.id,
       })
-
-      console.log(`Movimentation ${newMov.id} created!`)
     }
 
     return createdLawsuit
