@@ -12,7 +12,7 @@ export const insertNotificationSchema = z.object({
   movimentationId: z.string(),
   clientId: z.string(),
   message: z.string(),
-  sent: z.boolean().default(false),
+  sentAt: z.date().nullish(),
   recieved: z.boolean().default(false),
 })
 
@@ -66,7 +66,7 @@ class NotificationService {
       throw new Error("Notification not found")
     }
 
-    if (noti.sent) {
+    if (noti.sentAt) {
       throw new Error("Notification already sent")
     }
 
@@ -93,7 +93,7 @@ class NotificationService {
 
     const [updated] = await db
       .update(notification)
-      .set({ sent: true })
+      .set({ sentAt: new Date() }) // TODO: change to sent message timestamp
       .where(eq(notification.id, id))
       .returning()
 

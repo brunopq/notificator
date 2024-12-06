@@ -35,7 +35,7 @@ export const notification = pgTable("notifications", {
   movimentationId: id().references(() => movimentation.id),
   clientId: id().references(() => client.id),
   message: text().notNull(),
-  sent: boolean().notNull(),
+  sentAt: timestamp({ withTimezone: true, mode: "date" }),
   recieved: boolean().notNull(),
 })
 
