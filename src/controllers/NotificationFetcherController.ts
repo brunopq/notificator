@@ -26,34 +26,29 @@ class NotificationFetcherController {
     const notSentNotifications: Notification[] = []
 
     for (const mov of movimentations) {
-      const fullMovimentation =
-        await this.movimentationService.getFullMovimentationById(mov.id)
-
-      if (!fullMovimentation) {
-        console.log(`Movimentation ${mov.id} not found (???)`)
+      let notification: Notification
+      try {
+        notification = await this.notificationService.createInitialNotification(
+          mov.id,
+        )
+      } catch (e) {
+        console.log(e)
+        console.error(
+          `Could not create notification for movimentation ${mov.id}`,
+        )
         continue
       }
 
-      let clientName = fullMovimentation.lawsuit.client.name.split(" ")[0]
-
-      if (!clientName) {
-        console.log("Client does not have a name")
-        continue
+      try {
+        const { notification, schedule } =
+          await this.notificationService.createReminderNotification(mov.id)
+        console.log(notification)
+        console.log(schedule)
+      } catch (e) {
+        console.error(
+          `Could not create reminder notification for movimentation ${mov.id}`,
+        )
       }
-
-      clientName =
-        clientName.charAt(0).toLocaleUpperCase() +
-        clientName.toLocaleLowerCase().slice(1)
-
-      const notification = await this.notificationService.create({
-        movimentationId: fullMovimentation.id,
-        clientId: fullMovimentation.lawsuit.client.id,
-        message: `Olá, ${clientName}. Estamos entrando em contato pois foi agendada uma ${fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"} em seu processo para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy")}. Para mais informações estamos a sua disposição.`,
-        sent: false,
-        recieved: false,
-      })
-
-      console.log(`Notification ${notification.id} created`)
 
       try {
         const sent = await this.notificationService.send(notification.id)
