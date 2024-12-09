@@ -16,6 +16,7 @@ class WhatsappService {
     headers: { authorization: `bearer ${env.WHATSAPP_INSTANCE_TOKEN}` },
   })
   async isOnWhatsapp(phoneNumber: string) {
+    console.log(`Searching for number${phoneNumber}`)
     const res = await this.httpClient.post(
       `/chat/whatsappNumbers/${env.WHATSAPP_INSTANCE_ID}`,
       { number: phoneNumber },
@@ -34,6 +35,7 @@ class WhatsappService {
       return { exists: false as false }
     }
 
+    console.log(`Number ${phoneNumber} jid: ${numbers[0].jid}`)
     return {
       exists: true as true,
       jid: numbers[0].jid,
