@@ -20,12 +20,10 @@ class LawsuitService {
   }
 
   async getByCNJ(cnj: string) {
-    console.log("gettinbycnj")
     const ls = await db.query.lawsuit.findFirst({
       where: (lawsuit, { eq }) => eq(lawsuit.cnj, cnj),
       with: { client: true, movimentations: true },
     })
-    console.log("lawsuit", ls)
     return ls
   }
 
@@ -70,8 +68,6 @@ class LawsuitService {
     const judiceLawsuit =
       await JudiceService.lawsuitWithMovimentationsByJudiceId(judiceId)
 
-    console.log(judiceLawsuit)
-
     if (!judiceLawsuit) {
       throw new Error("Judice lawsuit not found")
     }
@@ -97,7 +93,7 @@ class LawsuitService {
         !movimentation.type ||
         !movimentation.judiceId
       ) {
-        console.log("Invalid movimentation", movimentation)
+        console.error("Invalid movimentation", movimentation)
         continue
       }
 
@@ -109,6 +105,8 @@ class LawsuitService {
         lawsuitId: createdLawsuit.id,
       })
     }
+
+    console.log(`Created lawsuit ${createdLawsuit.cnj}`)
 
     return createdLawsuit
   }

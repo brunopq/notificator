@@ -158,7 +158,7 @@ class NotificationService {
       throw new Error("Client has no phones")
     }
 
-    const phone = "51 98022-3200"
+    const phone = noti.client.phones[0]
 
     const sentMessage = await this.whatsappService.sendMessage(
       phone,

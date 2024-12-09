@@ -25,24 +25,34 @@ class WhatsappService {
 
     if (!parsed.success) {
       console.log("Could not parse /chat/whatsappNumbers response")
-      return false
+      return { exists: false as false }
     }
 
     const numbers = parsed.data
 
     if (numbers.length === 0 || !numbers[0].exists) {
-      return false
+      return { exists: false as false }
     }
 
-    return true
+    return {
+      exists: true as true,
+      jid: numbers[0].jid,
+    }
   }
 
   async sendMessage(phoneNumber: string, message: string) {
     try {
+      const jid = await this.isOnWhatsapp(phoneNumber)
+
+      if (!jid.exists) {
+        console.log(`Number ${phoneNumber} is not on WhatsApp`)
+        return
+      }
+
       const res = await this.httpClient.post(
         `/message/sendText/${env.WHATSAPP_INSTANCE_ID}`,
         {
-          number: "5551980223200@s.whatsapp.net" /* phoneNumber */,
+          number: jid.jid,
           textMessage: { text: message },
         },
       )
