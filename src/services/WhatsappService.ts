@@ -19,7 +19,7 @@ class WhatsappService {
     console.log(`Searching for number${phoneNumber}`)
     const res = await this.httpClient.post(
       `/chat/whatsappNumbers/${env.WHATSAPP_INSTANCE_ID}`,
-      { number: phoneNumber },
+      { number: phoneNumber.replaceAll(/\D/g, "") },
     )
 
     const parsed = whatsappNumbersResponseSchema.safeParse(res.data)
