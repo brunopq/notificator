@@ -129,6 +129,16 @@ const publicationSearchSchema = z.object({
   completeArrayAppPublication: completeArrayAppPublicationSchema,
 })
 
+const lawsuitInfoSchema = z.object({
+  processo: z.string(),
+  cnj: z.string(),
+  fase: z.string(),
+  área: z.string(),
+  "tipo de ação": z.string(),
+  cidade: z.string(),
+  partes: z.string(),
+})
+
 const clientSearchSchema = z.object({
   info: z.string(),
 })
@@ -225,27 +235,32 @@ class JudiceService {
     const client = $("h2.block > a").attr("href")
     const clientId = Number(client?.match(/\d+$/)?.[0])
 
-    const { lines } = $.extract({
-      lines: [{ selector: "div.well" }],
-    })
+    const result = {} as Record<string, string>
 
-    const info = lines
-      .flatMap((s) => [...s.matchAll(extractKeyValuesRegex)])
-      .reduce(
-        (acc, m) => {
-          acc[m[1].trim().toLocaleLowerCase()] = String(m[2].trim())
-          return acc
-        },
-        {} as Record<string, unknown>,
-      )
+    $("div.well")
+      .find("b")
+      .each((_, element) => {
+        const key = $(element)
+          .text()
+          .replaceAll(/[:-]/g, "")
+          .trim()
+          .toLowerCase()
 
-    const cnj = String(info.cnj)
+        const sibling = $(element).get(0)?.nextSibling
+        if (!sibling) return
 
-    if (!cnj) {
-      throw new Error("CNJ not found")
-    }
+        let value = $(sibling).text().trim()
+        value = value.split("-").at(0)?.trim() || value
+
+        if (key) {
+          result[key] = value
+        }
+      })
+
+    const { cnj, partes } = lawsuitInfoSchema.parse(result)
 
     return {
+      adverseParty: partes,
       clientId,
       cnj,
     }
