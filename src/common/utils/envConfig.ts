@@ -26,6 +26,9 @@ export const env = cleanEnv(process.env, {
   JUDICE_TENANT: str(),
   JUDICE_USER: str(),
   JUDICE_PASS: str(),
+  // aws
+  AWS_ACCESS_KEY_ID: str(),
+  AWS_SECRET_ACCESS_KEY: str(),
   // aws scheduler
   SCHEDULER_TARGET_ARN: str(),
   SCHEDULER_ROLE_ARN: str(),

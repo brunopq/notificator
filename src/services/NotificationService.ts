@@ -163,10 +163,10 @@ class NotificationService {
 
     const phone = noti.client.phones[0]
 
-    const sentMessage = null /*await this.whatsappService.sendMessage(
-      "51 980223200",
+    const sentMessage = await this.whatsappService.sendMessage(
+      phone,
       noti.message,
-    )*/
+    )
 
     console.log(sentMessage)
 

@@ -10,6 +10,10 @@ class SchedulerService {
   async scheduleNotificationSending(timestamp: Date, notificationId: string) {
     const schedulerClient = new SchedulerClient({
       region: "sa-east-1",
+      credentials: {
+        accessKeyId: env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+      },
     })
 
     const scheduleCommand = new CreateScheduleCommand({
