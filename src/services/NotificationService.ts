@@ -79,10 +79,13 @@ class NotificationService {
       clientName.charAt(0).toLocaleUpperCase() +
       clientName.toLocaleLowerCase().slice(1)
 
+    const movimentationType =
+      fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"
+
     const notification = await this.create({
       movimentationId: fullMovimentation.id,
       clientId: fullMovimentation.lawsuit.client.id,
-      message: `Olá, ${clientName}. Estamos entrando em contato pois foi agendada uma ${fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"} em seu processo para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy")}. Para mais informações estamos a sua disposição.`,
+      message: `Olá, ${clientName}. Estamos entrando em contato pois foi agendada uma ${movimentationType} no seu processo ${fullMovimentation.lawsuit.cnj} para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy")}.\nPerto da data da ${movimentationType} enviaremos outra notificação com mais detalhes. Para mais informações estamos a sua disposição.`,
       recieved: false,
     })
 
@@ -124,7 +127,7 @@ class NotificationService {
     const notification = await this.create({
       movimentationId: fullMovimentation.id,
       clientId: fullMovimentation.lawsuit.client.id,
-      message: `Olá, ${clientName}. Estamos enviando essa mensagem pois há uma ${fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"} agendada para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy")}, duas semanas a partir de hoje.\nEm breve entraremos em contato para mais informações.`,
+      message: `Olá, ${clientName}. Estamos enviando essa mensagem pois há uma ${fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"} agendada em seu processo ${fullMovimentation.lawsuit.cnj} para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy")}, duas semanas a partir de hoje.`,
       recieved: false,
     })
 
@@ -160,10 +163,10 @@ class NotificationService {
 
     const phone = noti.client.phones[0]
 
-    const sentMessage = await this.whatsappService.sendMessage(
-      phone,
+    const sentMessage = null /*await this.whatsappService.sendMessage(
+      "51 980223200",
       noti.message,
-    )
+    )*/
 
     console.log(sentMessage)
 
