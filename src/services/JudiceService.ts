@@ -1,6 +1,6 @@
-import { stringify } from "node:querystring"
+import { type ParsedUrlQueryInput, stringify } from "node:querystring"
 import { TZDate } from "@date-fns/tz"
-import axios, { type AxiosInstance } from "axios"
+import axios, { AxiosError, type AxiosInstance } from "axios"
 import { wrapper } from "axios-cookiejar-support"
 import * as cheerio from "cheerio"
 import { parse } from "date-fns"
@@ -8,6 +8,7 @@ import { ptBR } from "date-fns/locale/pt-BR"
 import { CookieJar } from "tough-cookie"
 import { z } from "zod"
 
+import { InternalServerError, NotFoundError } from "@/common/errors/HTTPError"
 import { env } from "@/common/utils/envConfig"
 
 async function createClient() {
@@ -153,6 +154,11 @@ const clientInfoSchema = z.object({
   celular: z.string().optional(),
 })
 
+type RequestOptions = {
+  method: "GET" | "POST"
+  body?: ParsedUrlQueryInput
+}
+
 class JudiceService {
   httpClient: AxiosInstance
 
@@ -266,26 +272,70 @@ class JudiceService {
     }
   }
 
-  async getAudienciasByJudiceId(id: number) {
-    const { data } = await this.httpClient.get(
-      `https://legala.officeadv.com.br/pgj/execution-hearings/${id}`,
-    )
+  private async makeRequest(
+    path: string,
+    options: RequestOptions,
+    retry = true,
+  ): Promise<unknown> {
+    try {
+      const response = await this.httpClient.request({
+        url: `https://legala.officeadv.com.br/${path}`,
+        method: options.method,
+        data: stringify(options.body),
+      })
 
-    return await this.extractAudiencias(data)
+      return response.data
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        // this makes sense, but judice does not throw 404 errors
+        if (e.response?.status === 404) {
+          throw new NotFoundError()
+        }
+        // not authorized requests get a 500 error from judice (for some reason)
+        if (e.response?.status === 500) {
+          if (!retry) {
+            console.log("Failed to make request to Judice API, no retries left")
+            throw new InternalServerError()
+          }
+
+          console.log("Failed to make request to Judice API, retrying")
+          this.httpClient = await createClient()
+
+          return this.makeRequest(path, options, false)
+        }
+      }
+      console.log("Unknown error on request to Judice API")
+      throw new InternalServerError()
+    }
+  }
+
+  async logoff() {
+    await this.makeRequest("pgj/logoff", { method: "GET" })
+  }
+
+  async getAudienciasByJudiceId(id: number) {
+    const data = await this.makeRequest(`pgj/execution-hearings/${id}`, {
+      method: "GET",
+    })
+
+    return await this.extractAudiencias(z.string().parse(data))
   }
 
   async searchLawsuitByCNJ(cnj: string) {
-    const searchResponse = await this.httpClient.post(
-      "https://legala.officeadv.com.br/pgj/search/methodAjaxGetSearchProcess",
-      stringify({
-        start: "0",
-        length: "25",
-        "txtInputSearchTerm[]": cnj,
-        "cboType[]": 1,
-      }),
+    const data = await this.makeRequest(
+      "pgj/search/methodAjaxGetSearchProcess",
+      {
+        method: "POST",
+        body: {
+          start: "0",
+          length: "25",
+          "txtInputSearchTerm[]": cnj,
+          "cboType[]": 1,
+        },
+      },
     )
 
-    const parsedResponse = lawsuitSearchSchema.parse(searchResponse.data)
+    const parsedResponse = lawsuitSearchSchema.parse(data)
 
     if (parsedResponse.data.length === 0) {
       return null
@@ -295,12 +345,12 @@ class JudiceService {
   }
 
   async lawsuitWithMovimentationsByJudiceId(judiceId: number) {
-    const { data } = await this.httpClient.get(
-      `https://legala.officeadv.com.br/pgj/execution-hearings/${judiceId}`,
-    )
+    const data = await this.makeRequest(`pgj/execution-hearings/${judiceId}`, {
+      method: "GET",
+    })
 
-    const movimentations = await this.extractAudiencias(data)
-    const lawsuitInfo = await this.extractLawsuitInfo(data)
+    const movimentations = await this.extractAudiencias(z.string().parse(data))
+    const lawsuitInfo = await this.extractLawsuitInfo(z.string().parse(data))
 
     return {
       ...lawsuitInfo,
@@ -320,46 +370,52 @@ class JudiceService {
   }
 
   async getPublications() {
-    const res = await this.httpClient.post(
-      "https://legala.officeadv.com.br/pgj/publication/methodAjaxListPublications",
-      stringify({
-        start: 0,
-        length: 9999,
-        tab: "process",
-        // txtDataInicial: "05/11/2024",
-        // txtDataFinal: "05/11/2024",
-        cboLawyer: 0,
-        cboClient: "",
-        cboWarning: 0,
-        cboRead: 0,
-      }),
+    const data = await this.makeRequest(
+      "pgj/publication/methodAjaxListPublications",
+      {
+        method: "POST",
+        body: {
+          start: 0,
+          length: 9999,
+          tab: "process",
+          // txtDataInicial: "05/11/2024",
+          // txtDataFinal: "05/11/2024",
+          cboLawyer: 0,
+          cboClient: "",
+          cboWarning: 0,
+          cboRead: 0,
+        },
+      },
     )
 
-    const parsed = publicationsSearchSchema.parse(res.data)
+    const parsed = publicationsSearchSchema.parse(data)
 
     return parsed.data.map(formatPublication)
   }
 
   async getPublicationByJudiceId(id: number) {
-    const res = await this.httpClient.post(
-      "https://legala.officeadv.com.br/pgj/publication/methodAjaxGetDescription",
-      stringify({
-        id,
-      }),
+    const data = await this.makeRequest(
+      "pgj/publication/methodAjaxGetDescription",
+      {
+        method: "POST",
+        body: { id },
+      },
     )
+    console.log(data)
 
-    const parsed = publicationSearchSchema.parse(res.data)
+    const parsed = publicationSearchSchema.parse(data)
 
     return parsed
   }
 
   async getClientByJudiceId(id: number) {
-    const res = await this.httpClient.post(
-      "https://legala.officeadv.com.br/pgj/clients/ajax-get-clients-infobar",
-      stringify({ clientId: id }),
+    const data = await this.makeRequest(
+      "pgj/clients/ajax-get-clients-infobar",
+      { method: "POST", body: { clientId: id } },
+      false,
     )
 
-    const parsed = clientSearchSchema.parse(res.data)
+    const parsed = clientSearchSchema.parse(data)
 
     const $ = cheerio.load(parsed.info)
 
