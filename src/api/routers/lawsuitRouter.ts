@@ -1,12 +1,15 @@
-import LawsuitController from "@/controllers/LawsuitController"
 import { Router } from "express"
+
+import DependencyManager from "@/dependencyManager"
 
 const lawsuitRouter = Router()
 
-lawsuitRouter.get("/", LawsuitController.index)
-lawsuitRouter.get("/:cnj", LawsuitController.show)
-lawsuitRouter.post("/", LawsuitController.create)
-lawsuitRouter.get("/judice/:judiceId", LawsuitController.showJudiceId)
-lawsuitRouter.post("/judice/:judiceId", LawsuitController.fetchJudiceId)
+const lawsuitController = DependencyManager.getLawsuitController()
+
+lawsuitRouter.get("/", lawsuitController.index)
+lawsuitRouter.get("/:cnj", lawsuitController.show)
+lawsuitRouter.post("/", lawsuitController.create)
+lawsuitRouter.get("/judice/:judiceId", lawsuitController.showJudiceId)
+lawsuitRouter.post("/judice/:judiceId", lawsuitController.fetchJudiceId)
 
 export { lawsuitRouter }

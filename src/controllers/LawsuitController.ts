@@ -1,14 +1,15 @@
 import type { RequestHandler } from "express"
 
 import { BadRequestError } from "@/common/errors/HTTPError"
-import LawsuitService from "@/services/LawsuitService"
 
-class LawsuitController {
-  private lawsuitService: typeof LawsuitService
+import type { LawsuitJudiceService } from "@/services/LawsuitJudiceService"
+import type { LawsuitService } from "@/services/LawsuitService"
 
-  constructor(lawsuitService: typeof LawsuitService) {
-    this.lawsuitService = lawsuitService
-  }
+export class LawsuitController {
+  constructor(
+    private lawsuitService: LawsuitService,
+    private lawsuitJudiceService: LawsuitJudiceService,
+  ) {}
 
   index: RequestHandler = async (req, res) => {
     const lawsuits = await this.lawsuitService.listLawsuits()
@@ -59,7 +60,8 @@ class LawsuitController {
       throw new BadRequestError("Judice ID is required")
     }
 
-    const lawsuit = await this.lawsuitService.getOrCreateByJudiceId(judiceId)
+    const lawsuit =
+      await this.lawsuitJudiceService.getOrCreateByJudiceId(judiceId)
 
     if (!lawsuit) {
       throw new BadRequestError("Lawsuit not found")
@@ -68,5 +70,3 @@ class LawsuitController {
     res.json(lawsuit)
   }
 }
-
-export default new LawsuitController(LawsuitService)

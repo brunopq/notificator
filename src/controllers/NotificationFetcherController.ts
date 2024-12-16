@@ -1,25 +1,24 @@
-import { format } from "date-fns"
 import type { RequestHandler } from "express"
 
-import MovimentationService from "@/services/MovimentationService"
-import NotificationService from "@/services/NotificationService"
+import type { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
+import type { NotificationService } from "@/services/NotificationService"
 import type { Notification } from "@/services/NotificationService"
-import PublicationsService from "@/services/PublicationsService"
+import type { PublicationJudiceService } from "@/services/PublicationJudiceService"
 
-class NotificationFetcherController {
+export class NotificationFetcherController {
   constructor(
-    private movimentationService: typeof MovimentationService,
-    private notificationService: typeof NotificationService,
-    private publicationsService: typeof PublicationsService,
+    private movimentationJudiceService: MovimentationJudiceService,
+    private notificationService: NotificationService,
+    private publicationJudiceService: PublicationJudiceService,
   ) {}
 
   fetchAndSendNotifications: RequestHandler = async (_, res) => {
     console.log(new Date().toLocaleString())
-    const publications = await this.publicationsService.fetchPublications()
+    const publications = await this.publicationJudiceService.fetchPublications()
     console.log(`${publications.length} publications open on Judice`)
 
     const movimentations =
-      await this.movimentationService.fetchNewMovimentations()
+      await this.movimentationJudiceService.fetchNewMovimentations()
     console.log(`${movimentations.length} new movimentations created`)
 
     const sentNotifications: Notification[] = []
@@ -71,9 +70,3 @@ class NotificationFetcherController {
     })
   }
 }
-
-export default new NotificationFetcherController(
-  MovimentationService,
-  NotificationService,
-  PublicationsService,
-)

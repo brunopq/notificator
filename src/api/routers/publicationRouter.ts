@@ -1,13 +1,15 @@
 import { Router } from "express"
 
-import PublicationController from "@/controllers/PublicationController"
+import DependencyManager from "@/dependencyManager"
 
 const publicationRouter = Router()
 
-publicationRouter.get("/", PublicationController.index)
-publicationRouter.get("/:id", PublicationController.show)
-publicationRouter.post("/", PublicationController.create)
-publicationRouter.post("/fetch", PublicationController.fetch)
-publicationRouter.post("/fetch/closed", PublicationController.fetchClosed)
+const publicationController = DependencyManager.getPublicationController()
+
+publicationRouter.get("/", publicationController.index)
+publicationRouter.get("/:id", publicationController.show)
+publicationRouter.post("/", publicationController.create)
+publicationRouter.post("/fetch", publicationController.fetch)
+publicationRouter.post("/fetch/closed", publicationController.fetchClosed)
 
 export { publicationRouter }

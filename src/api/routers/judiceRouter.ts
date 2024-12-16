@@ -1,15 +1,17 @@
 import { Router } from "express"
 
-import JudiceController from "@/controllers/JudiceController"
+import DependencyManager from "@/dependencyManager"
 
 const judiceRouter = Router()
 
-judiceRouter.get("/logoff", JudiceController.logoff)
-judiceRouter.get("/publications", JudiceController.indexPublications)
-judiceRouter.get("/publications/:judiceId", JudiceController.showPublication)
-judiceRouter.get("/lawsuits/:cnj", JudiceController.showLawsuit)
-judiceRouter.get("/lawsuits/:cnj/audiencias", JudiceController.showAudiencias)
-// judiceRouter.get("/lawsuits/:cnj/audiencias/:audienciaId", JudiceController.showAudiencia)
-judiceRouter.get("/clients/:judiceId", JudiceController.showClient)
+const judiceController = DependencyManager.getJudiceController()
+
+judiceRouter.get("/logoff", judiceController.logoff)
+judiceRouter.get("/publications", judiceController.indexPublications)
+judiceRouter.get("/publications/:judiceId", judiceController.showPublication)
+judiceRouter.get("/lawsuits/:cnj", judiceController.showLawsuit)
+judiceRouter.get("/lawsuits/:cnj/audiencias", judiceController.showAudiencias)
+// judiceRouter.get("/lawsuits/:cnj/audiencias/:audienciaId", judiceController.showAudiencia)
+judiceRouter.get("/clients/:judiceId", judiceController.showClient)
 
 export { judiceRouter }

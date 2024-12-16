@@ -1,16 +1,14 @@
 import type { RequestHandler } from "express"
 
 import { BadRequestError, NotFoundError } from "@/common/errors/HTTPError"
-import NotificationService, {
+
+import {
+  type NotificationService,
   insertNotificationSchema,
 } from "@/services/NotificationService"
 
-class NotificationController {
-  private notificationService: typeof NotificationService
-
-  constructor(notificationService: typeof NotificationService) {
-    this.notificationService = notificationService
-  }
+export class NotificationController {
+  constructor(private notificationService: NotificationService) {}
 
   index: RequestHandler = async (_req, res) => {
     const notifications = await this.notificationService.index()
@@ -65,5 +63,3 @@ class NotificationController {
     res.json(notification)
   }
 }
-
-export default new NotificationController(NotificationService)

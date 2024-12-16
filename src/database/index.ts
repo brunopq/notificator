@@ -25,6 +25,7 @@ const migration = postgres({ ...connection, max: 1 })
 const sql = postgres({ ...connection })
 
 export const db = drizzle(sql, drizzleConfig)
+export type databaseType = typeof db
 
 await migrate(drizzle(migration, drizzleConfig), {
   migrationsFolder: "./drizzle",

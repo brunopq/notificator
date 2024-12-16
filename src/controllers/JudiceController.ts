@@ -6,15 +6,10 @@ import {
   HTTPError,
   InternalServerError,
 } from "@/common/errors/HTTPError"
+import type { JudiceService } from "@/services/JudiceService"
 
-import JudiceService from "@/services/JudiceService"
-
-class JudiceController {
-  private judiceService: typeof JudiceService
-
-  constructor(judiceService: typeof JudiceService) {
-    this.judiceService = judiceService
-  }
+export class JudiceController {
+  constructor(private judiceService: JudiceService) {}
 
   logoff: RequestHandler = async (_req, res) => {
     await this.judiceService.logoff()
@@ -114,5 +109,3 @@ class JudiceController {
     }
   }
 }
-
-export default new JudiceController(JudiceService)

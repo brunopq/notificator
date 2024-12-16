@@ -1,16 +1,17 @@
 import type { RequestHandler } from "express"
 
 import { BadRequestError } from "@/common/errors/HTTPError"
-import PublicationsService, {
+import type { PublicationJudiceService } from "@/services/PublicationJudiceService"
+import {
+  type PublicationsService,
   insertPublicationSchema,
 } from "@/services/PublicationsService"
 
-class PublicationController {
-  private publicationsService: typeof PublicationsService
-
-  constructor(publicationsService: typeof PublicationsService) {
-    this.publicationsService = publicationsService
-  }
+export class PublicationController {
+  constructor(
+    private publicationsService: PublicationsService,
+    private publicationJudiceService: PublicationJudiceService,
+  ) {}
 
   index: RequestHandler = async (_req, res) => {
     const publications = await this.publicationsService.listPublications()
@@ -31,14 +32,14 @@ class PublicationController {
   }
 
   fetch: RequestHandler = async (_req, res) => {
-    const publications = await this.publicationsService.fetchPublications()
+    const publications = await this.publicationJudiceService.fetchPublications()
 
     res.json(publications)
   }
 
   fetchClosed: RequestHandler = async (_req, res) => {
     const closedPublications =
-      await this.publicationsService.fetchClosedPublications()
+      await this.publicationJudiceService.fetchClosedPublications()
 
     res.json(closedPublications)
   }
@@ -52,5 +53,3 @@ class PublicationController {
     res.json(publication)
   }
 }
-
-export default new PublicationController(PublicationsService)

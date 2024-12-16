@@ -10,11 +10,12 @@ const whatsappNumbersResponseSchema = z.array(
   }),
 )
 
-class WhatsappService {
+export class WhatsappService {
   private httpClient = axios.create({
     baseURL: env.WHATSAPP_SERVICE_URL,
     headers: { authorization: `bearer ${env.WHATSAPP_INSTANCE_TOKEN}` },
   })
+
   async isOnWhatsapp(phoneNumber: string) {
     console.log(`Searching for number${phoneNumber}`)
     const res = await this.httpClient.post(
@@ -69,5 +70,3 @@ class WhatsappService {
     }
   }
 }
-
-export default new WhatsappService()

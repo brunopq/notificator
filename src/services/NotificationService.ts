@@ -1,14 +1,14 @@
+import { format, isBefore, subWeeks } from "date-fns"
 import { eq } from "drizzle-orm"
-import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import { createSelectSchema } from "drizzle-zod"
 import { z } from "zod"
 
 import { db } from "@/database"
 import { notification } from "@/database/schema"
 
-import { format, isBefore, subWeeks } from "date-fns"
-import MovimentationService from "./MovimentationService"
-import SchedulerService from "./SchedulerService"
-import WhatsappService from "./WhatsappService"
+import type { MovimentationService } from "./MovimentationService"
+import type { SchedulerService } from "./SchedulerService"
+import type { WhatsappService } from "./WhatsappService"
 
 const selectNotificationSchema = createSelectSchema(notification)
 export const insertNotificationSchema = z.object({
@@ -22,11 +22,11 @@ export const insertNotificationSchema = z.object({
 export type Notification = z.infer<typeof selectNotificationSchema>
 type NewNotification = z.infer<typeof insertNotificationSchema>
 
-class NotificationService {
+export class NotificationService {
   constructor(
-    private whatsappService: typeof WhatsappService,
-    private movimentationService: typeof MovimentationService,
-    private schedulerService: typeof SchedulerService,
+    private whatsappService: WhatsappService,
+    private movimentationService: MovimentationService,
+    private schedulerService: SchedulerService,
   ) {}
 
   async index() {
@@ -183,9 +183,3 @@ class NotificationService {
     return updated
   }
 }
-
-export default new NotificationService(
-  WhatsappService,
-  MovimentationService,
-  SchedulerService,
-)

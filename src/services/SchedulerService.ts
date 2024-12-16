@@ -6,7 +6,7 @@ import { format } from "date-fns"
 
 import { env } from "@/common/utils/envConfig"
 
-class SchedulerService {
+export class SchedulerService {
   async scheduleNotificationSending(timestamp: Date, notificationId: string) {
     const schedulerClient = new SchedulerClient({
       region: "sa-east-1",
@@ -46,5 +46,3 @@ class SchedulerService {
     }
   }
 }
-
-export default new SchedulerService()

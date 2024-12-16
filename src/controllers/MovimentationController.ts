@@ -1,15 +1,18 @@
-import { BadRequestError } from "@/common/errors/HTTPError"
-import MovimentationService, {
-  insertMovimentationSchema,
-} from "@/services/MovimentationService"
 import type { RequestHandler } from "express"
 
-class MovimentationController {
-  private movimentationService: typeof MovimentationService
+import { BadRequestError } from "@/common/errors/HTTPError"
 
-  constructor(movimentationService: typeof MovimentationService) {
-    this.movimentationService = movimentationService
-  }
+import type { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
+import {
+  type MovimentationService,
+  insertMovimentationSchema,
+} from "@/services/MovimentationService"
+
+export class MovimentationController {
+  constructor(
+    private movimentationService: MovimentationService,
+    private movimentationJudiceService: MovimentationJudiceService,
+  ) {}
 
   index: RequestHandler = async (_req, res) => {
     const movimentations = await this.movimentationService.getMovimentations()
@@ -44,10 +47,8 @@ class MovimentationController {
 
   fetch: RequestHandler = async (_req, res) => {
     const movimentation =
-      await this.movimentationService.fetchNewMovimentations()
+      await this.movimentationJudiceService.fetchNewMovimentations()
 
     res.json(movimentation)
   }
 }
-
-export default new MovimentationController(MovimentationService)

@@ -1,15 +1,17 @@
 import { Router } from "express"
 
-import { notificationFetcherRouter } from "./notificationFetcherRouter"
+import DependencyManager from "@/dependencyManager"
 
-import NotificationController from "@/controllers/NotificationController"
+import { notificationFetcherRouter } from "./notificationFetcherRouter"
 
 const notificationRouter = Router()
 
-notificationRouter.get("/", NotificationController.index)
-notificationRouter.get("/:id", NotificationController.show)
-notificationRouter.post("/", NotificationController.create)
-notificationRouter.post("/:id/send", NotificationController.send)
+const notificationController = DependencyManager.getNotificationController()
+
+notificationRouter.get("/", notificationController.index)
+notificationRouter.get("/:id", notificationController.show)
+notificationRouter.post("/", notificationController.create)
+notificationRouter.post("/:id/send", notificationController.send)
 
 notificationRouter.use("/fetcher", notificationFetcherRouter)
 

@@ -11,7 +11,7 @@ import { z } from "zod"
 import { InternalServerError, NotFoundError } from "@/common/errors/HTTPError"
 import { env } from "@/common/utils/envConfig"
 
-async function createClient() {
+export async function createJudiceApiClient() {
   console.log("Establishing connection to Judice API")
   const jar = new CookieJar()
   const client = wrapper(axios.create({ jar }))
@@ -159,12 +159,9 @@ type RequestOptions = {
   body?: ParsedUrlQueryInput
 }
 
-class JudiceService {
-  httpClient: AxiosInstance
-
-  constructor(client: AxiosInstance) {
-    this.httpClient = client
-  }
+export class JudiceService {
+  private httpClient: AxiosInstance | null = null
+  constructor(private createHttpClient: () => Promise<AxiosInstance>) {}
 
   private async extractAudiencias(data: string) {
     const $ = cheerio.load(data)
@@ -278,6 +275,9 @@ class JudiceService {
     retry = true,
   ): Promise<unknown> {
     try {
+      if (!this.httpClient) {
+        this.httpClient = await this.createHttpClient()
+      }
       const response = await this.httpClient.request({
         url: `https://legala.officeadv.com.br/${path}`,
         method: options.method,
@@ -299,7 +299,7 @@ class JudiceService {
           }
 
           console.log("Failed to make request to Judice API, retrying")
-          this.httpClient = await createClient()
+          this.httpClient = await createJudiceApiClient()
 
           return this.makeRequest(path, options, false)
         }
@@ -440,5 +440,3 @@ class JudiceService {
 }
 
 const extractKeyValuesRegex = /([A-Za-z\s-]+):\s*([^:]+?)(?=\s+[A-Za-z\s]+:|$)/g
-
-export default new JudiceService(await createClient())
