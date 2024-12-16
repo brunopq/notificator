@@ -41,8 +41,6 @@ export class NotificationFetcherController {
       try {
         const { notification, schedule } =
           await this.notificationService.createReminderNotification(mov.id)
-        console.log(notification)
-        console.log(schedule)
       } catch (e) {
         console.error(
           `Could not create reminder notification for movimentation ${mov.id}`,

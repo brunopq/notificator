@@ -401,7 +401,6 @@ export class JudiceService {
         body: { id },
       },
     )
-    console.log(data)
 
     const parsed = publicationSearchSchema.parse(data)
 
