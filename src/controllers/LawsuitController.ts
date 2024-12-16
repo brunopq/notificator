@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express"
 
-import { BadRequestError } from "@/common/errors/HTTPError"
+import { BadRequestError, NotFoundError } from "@/common/errors/HTTPError"
 
 import type { LawsuitJudiceService } from "@/services/LawsuitJudiceService"
 import type { LawsuitService } from "@/services/LawsuitService"
@@ -26,7 +26,7 @@ export class LawsuitController {
     const lawsuit = await this.lawsuitService.getByCNJ(cnj)
 
     if (!lawsuit) {
-      throw new BadRequestError("Lawsuit not found")
+      throw new NotFoundError("Lawsuit not found")
     }
 
     res.json(lawsuit)
@@ -47,7 +47,7 @@ export class LawsuitController {
     const lawsuit = await this.lawsuitService.getByJudiceId(judiceId)
 
     if (!lawsuit) {
-      throw new BadRequestError("Lawsuit not found")
+      throw new NotFoundError("Lawsuit not found")
     }
 
     res.json(lawsuit)
@@ -64,7 +64,7 @@ export class LawsuitController {
       await this.lawsuitJudiceService.getOrCreateByJudiceId(judiceId)
 
     if (!lawsuit) {
-      throw new BadRequestError("Lawsuit not found")
+      throw new NotFoundError("Lawsuit not found")
     }
 
     res.json(lawsuit)
