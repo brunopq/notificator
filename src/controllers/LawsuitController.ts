@@ -3,7 +3,11 @@ import type { RequestHandler } from "express"
 import { BadRequestError } from "@/common/errors/HTTPError"
 
 import type { LawsuitJudiceService } from "@/services/LawsuitJudiceService"
-import type { LawsuitService } from "@/services/LawsuitService"
+import {
+  type LawsuitService,
+  insertLawsuitSchema,
+} from "@/services/LawsuitService"
+import { paginationInputSchema } from "@/common/models/pagination"
 
 export class LawsuitController {
   constructor(
@@ -12,7 +16,9 @@ export class LawsuitController {
   ) {}
 
   index: RequestHandler = async (req, res) => {
-    const lawsuits = await this.lawsuitService.listLawsuits()
+    const pagination = paginationInputSchema.parse(req.query)
+
+    const lawsuits = await this.lawsuitService.listLawsuits(pagination)
     res.json(lawsuits)
   }
 
@@ -33,8 +39,11 @@ export class LawsuitController {
   }
 
   create: RequestHandler = async (req, res) => {
-    const lawsuit = await this.lawsuitService.create(req.body)
-    res.status(201).json(lawsuit)
+    const lawsuitData = insertLawsuitSchema.parse(req.body)
+
+    const createdLawsuit = await this.lawsuitService.create(lawsuitData)
+
+    res.status(201).json(createdLawsuit)
   }
 
   showJudiceId: RequestHandler = async (req, res) => {
