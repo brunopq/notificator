@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import type { z } from "zod"
 
-import { Paginated, PaginationInput } from "@/common/models/pagination"
+import type { Paginated, PaginationInput } from "@/common/models/pagination"
 
 import type { db as database } from "@/database"
 import { publication } from "@/database/schema"
@@ -17,17 +17,19 @@ export class PublicationsService {
   constructor(private db: typeof database) {}
 
   // simple
-  async listPublications(pagination: PaginationInput): Promise<Paginated<typeof selectPublicationSchema>> {
+  async listPublications(
+    pagination: PaginationInput,
+  ): Promise<Paginated<typeof selectPublicationSchema>> {
     const publicationsCount = await this.db.$count(publication)
 
-    const publications =await this.db.query.publication.findMany({
+    const publications = await this.db.query.publication.findMany({
       limit: pagination.limit,
       offset: pagination.offset,
     })
 
     return {
       data: publications,
-      total: publicationsCount ,
+      total: publicationsCount,
       limit: pagination.limit,
       offset: pagination.offset,
     }

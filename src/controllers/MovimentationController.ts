@@ -2,12 +2,12 @@ import type { RequestHandler } from "express"
 
 import { BadRequestError } from "@/common/errors/HTTPError"
 
+import { paginationInputSchema } from "@/common/models/pagination"
 import type { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
 import {
   type MovimentationService,
   insertMovimentationSchema,
 } from "@/services/MovimentationService"
-import { paginationInputSchema } from "@/common/models/pagination"
 
 export class MovimentationController {
   constructor(
@@ -18,7 +18,8 @@ export class MovimentationController {
   index: RequestHandler = async (req, res) => {
     const pagination = paginationInputSchema.parse(req.query)
 
-    const movimentations = await this.movimentationService.getMovimentations(pagination)
+    const movimentations =
+      await this.movimentationService.getMovimentations(pagination)
 
     res.json(movimentations)
   }

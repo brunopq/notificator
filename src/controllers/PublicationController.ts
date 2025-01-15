@@ -18,7 +18,8 @@ export class PublicationController {
   index: RequestHandler = async (req, res) => {
     const pagination = paginationInputSchema.parse(req.query)
 
-    const publications = await this.publicationsService.listPublications(pagination)
+    const publications =
+      await this.publicationsService.listPublications(pagination)
 
     res.json(publications)
   }
