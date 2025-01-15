@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express"
 
 import { BadRequestError, NotFoundError } from "@/common/errors/HTTPError"
+import { paginationInputSchema } from "@/common/models/pagination"
 
 import {
   type NotificationService,
@@ -10,8 +11,10 @@ import {
 export class NotificationController {
   constructor(private notificationService: NotificationService) {}
 
-  index: RequestHandler = async (_req, res) => {
-    const notifications = await this.notificationService.index()
+  index: RequestHandler = async (req, res) => {
+    const pagination = paginationInputSchema.parse(req.query)
+
+    const notifications = await this.notificationService.index(pagination)
 
     res.json(notifications)
   }

@@ -1,11 +1,13 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import type { z } from "zod"
 
+import { Paginated, PaginationInput } from "@/common/models/pagination"
+
 import type { db as database } from "@/database"
 import { lawsuit } from "@/database/schema"
 
 const selectLawsuitSchema = createSelectSchema(lawsuit)
-const insertLawsuitSchema = createInsertSchema(lawsuit)
+export const insertLawsuitSchema = createInsertSchema(lawsuit)
 
 type Lawsuit = z.infer<typeof selectLawsuitSchema>
 type NewLawsuit = z.infer<typeof insertLawsuitSchema>
@@ -14,8 +16,23 @@ export class LawsuitService {
   constructor(private db: typeof database) {}
 
   // simple
-  async listLawsuits() {
-    return await this.db.query.lawsuit.findMany({ with: { client: true } })
+  async listLawsuits(
+    pagination: PaginationInput,
+  ): Promise<Paginated<typeof selectLawsuitSchema>> {
+    const lawsuitsCount = await this.db.$count(lawsuit)
+
+    const lawsuits = await this.db.query.lawsuit.findMany({
+      with: { client: true },
+      limit: pagination.limit,
+      offset: pagination.offset,
+    })
+
+    return {
+      data: lawsuits,
+      total: lawsuitsCount,
+      limit: pagination.limit,
+      offset: pagination.offset,
+    }
   }
 
   // simple
