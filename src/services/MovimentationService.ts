@@ -39,7 +39,7 @@ export class MovimentationService {
    */
   async getFullMovimentationById(id: string) {
     return await this.db.query.movimentation.findFirst({
-      with: { lawsuit: { with: { client: true } } },
+      with: { lawsuit: { with: { client: true } }, notifications: true },
       where: (movimentation, { eq }) => eq(movimentation.id, id),
     })
   }

@@ -17,6 +17,22 @@ export class LawsuitController {
   }
 
   show: RequestHandler = async (req, res) => {
+    const id = req.params.id
+
+    if (!id) {
+      throw new BadRequestError("ID is required")
+    }
+
+    const lawsuit = await this.lawsuitService.getById(id)
+
+    if (!lawsuit) {
+      throw new NotFoundError("Lawsuit not found")
+    }
+
+    res.json(lawsuit)
+  }
+
+  showByCnj: RequestHandler = async (req, res) => {
     const cnj = req.params.cnj
 
     if (!cnj) {

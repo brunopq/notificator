@@ -13,12 +13,10 @@ type NewLawsuit = z.infer<typeof insertLawsuitSchema>
 export class LawsuitService {
   constructor(private db: typeof database) {}
 
-  // simple
   async listLawsuits() {
     return await this.db.query.lawsuit.findMany({ with: { client: true } })
   }
 
-  // simple
   async getByCNJ(cnj: string) {
     const ls = await this.db.query.lawsuit.findFirst({
       where: (lawsuit, { eq }) => eq(lawsuit.cnj, cnj),
@@ -27,14 +25,20 @@ export class LawsuitService {
     return ls
   }
 
-  // simple
+  async getById(id: string) {
+    const ls = await this.db.query.lawsuit.findFirst({
+      where: (lawsuit, { eq }) => eq(lawsuit.id, id),
+      with: { client: true, movimentations: true },
+    })
+    return ls
+  }
+
   async getByJudiceId(judiceId: number) {
     return await this.db.query.lawsuit.findFirst({
       where: (lawsuit, { eq }) => eq(lawsuit.judiceId, judiceId),
     })
   }
 
-  // simple
   async create(newLawsuit: NewLawsuit) {
     const [createdLawsuit] = await this.db
       .insert(lawsuit)
