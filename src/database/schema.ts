@@ -33,7 +33,7 @@ const judiceObject = () => ({
 export const notification = pgTable("notifications", {
   ...object(),
   movimentationId: id().references(() => movimentation.id),
-  clientId: id().references(() => client.id),
+  clientId: id().references(() => client.id).notNull(),
   message: text().notNull(),
   sentAt: timestamp({ withTimezone: true, mode: "date" }),
   recieved: boolean().notNull(),

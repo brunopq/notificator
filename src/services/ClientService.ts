@@ -4,7 +4,7 @@ import { z } from "zod"
 import type { db as database } from "@/database"
 import { client } from "@/database/schema"
 
-const selectClientSchema = createSelectSchema(client, {
+export const selectClientSchema = createSelectSchema(client, {
   phones: z.array(z.string()),
 })
 const insertClientSchema = createInsertSchema(client, {

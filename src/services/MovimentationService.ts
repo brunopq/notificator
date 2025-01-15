@@ -1,6 +1,8 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import type { z } from "zod"
 
+import { Paginated, PaginationInput } from "@/common/models/pagination"
+
 import type { db as database } from "@/database"
 import { movimentation } from "@/database/schema"
 
@@ -17,8 +19,19 @@ export class MovimentationService {
   /**
    * Returns a list of the movimentations in the database
    */
-  async getMovimentations() {
-    return await this.db.query.movimentation.findMany()
+  async getMovimentations(pagination: PaginationInput): Promise<Paginated<typeof selectMovimentationSchema>> {
+    const movimentationCount = await this.db.$count(movimentation)
+    const movimentations = await this.db.query.movimentation.findMany({
+      limit: pagination.limit,
+      offset: pagination.offset,
+    })
+    
+    return {
+      data: movimentations,
+      total: movimentationCount,
+      limit: pagination.limit,
+      offset: pagination.offset,
+    }
   }
 
   // simple
