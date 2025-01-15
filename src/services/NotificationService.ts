@@ -3,14 +3,20 @@ import { eq } from "drizzle-orm"
 import { createSelectSchema } from "drizzle-zod"
 import { z } from "zod"
 
+import { Paginated, PaginationInput } from "@/common/models/pagination"
+
 import { db } from "@/database"
 import { notification } from "@/database/schema"
 
+import {selectClientSchema } from './ClientService'
 import type { MovimentationService } from "./MovimentationService"
 import type { SchedulerService } from "./SchedulerService"
 import type { WhatsappService } from "./WhatsappService"
 
 const selectNotificationSchema = createSelectSchema(notification)
+const notificationWithClientSchema = selectNotificationSchema.extend({
+  client: selectClientSchema
+  })
 export const insertNotificationSchema = z.object({
   movimentationId: z.string(),
   clientId: z.string(),
@@ -29,12 +35,20 @@ export class NotificationService {
     private schedulerService: SchedulerService,
   ) {}
 
-  async index() {
-    return await db.query.notification.findMany({
-      with: {
-        client: true,
-      },
+  async index(pagination: PaginationInput): Promise<Paginated<typeof notificationWithClientSchema>> {
+    const notificationsCount = await db.$count(notification)
+    const notifications = await db.query.notification.findMany({
+      with: { client: true, },
+      limit: pagination.limit,
+      offset: pagination.offset,
     })
+
+    return {
+      data: notifications,
+      total: notificationsCount,
+      limit: pagination.limit,
+      offset: pagination.offset,
+    }
   }
 
   async show(id: string) {

@@ -2,12 +2,13 @@ import type { RequestHandler } from "express"
 
 import { BadRequestError } from "@/common/errors/HTTPError"
 
+import { paginationInputSchema } from "@/common/models/pagination"
+
 import type { LawsuitJudiceService } from "@/services/LawsuitJudiceService"
 import {
   type LawsuitService,
   insertLawsuitSchema,
 } from "@/services/LawsuitService"
-import { paginationInputSchema } from "@/common/models/pagination"
 
 export class LawsuitController {
   constructor(

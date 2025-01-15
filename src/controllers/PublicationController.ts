@@ -1,6 +1,8 @@
 import type { RequestHandler } from "express"
 
 import { BadRequestError } from "@/common/errors/HTTPError"
+import { paginationInputSchema } from "@/common/models/pagination"
+
 import type { PublicationJudiceService } from "@/services/PublicationJudiceService"
 import {
   type PublicationsService,
@@ -13,8 +15,10 @@ export class PublicationController {
     private publicationJudiceService: PublicationJudiceService,
   ) {}
 
-  index: RequestHandler = async (_req, res) => {
-    const publications = await this.publicationsService.listPublications()
+  index: RequestHandler = async (req, res) => {
+    const pagination = paginationInputSchema.parse(req.query)
+
+    const publications = await this.publicationsService.listPublications(pagination)
 
     res.json(publications)
   }
