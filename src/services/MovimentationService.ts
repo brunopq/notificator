@@ -12,6 +12,11 @@ export const insertMovimentationSchema = createInsertSchema(movimentation)
 export type Movimentation = z.infer<typeof selectMovimentationSchema>
 type NewMovimentation = z.infer<typeof insertMovimentationSchema>
 
+const movimentationWith: {
+  lawsuit?: true
+  notifications?: true
+} = {}
+
 export class MovimentationService {
   constructor(private db: typeof database) {}
 
@@ -44,6 +49,19 @@ export class MovimentationService {
     return await this.db.query.movimentation.findMany({
       with: {
         lawsuit: { with: { client: true } },
+      },
+    })
+  }
+
+  async getMovimentationsByLawsuitId(
+    lawsuitId: string,
+    include = movimentationWith,
+  ) {
+    return await this.db.query.movimentation.findMany({
+      where: (movimentation, { eq }) => eq(movimentation.lawsuitId, lawsuitId),
+      with: {
+        lawsuit: include.lawsuit,
+        notifications: include.notifications,
       },
     })
   }

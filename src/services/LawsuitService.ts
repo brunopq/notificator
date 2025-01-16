@@ -9,7 +9,7 @@ import { lawsuit } from "@/database/schema"
 const selectLawsuitSchema = createSelectSchema(lawsuit)
 export const insertLawsuitSchema = createInsertSchema(lawsuit)
 
-type Lawsuit = z.infer<typeof selectLawsuitSchema>
+export type Lawsuit = z.infer<typeof selectLawsuitSchema>
 type NewLawsuit = z.infer<typeof insertLawsuitSchema>
 
 export class LawsuitService {

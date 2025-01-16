@@ -232,6 +232,7 @@ export class JudiceService {
     return arr
   }
 
+  // TODO: add error handling and logging, this might expolde at any moment
   private async extractLawsuitInfo(data: string) {
     const $ = cheerio.load(data)
 

@@ -1,5 +1,6 @@
 import { isAfter } from "date-fns"
 import type { JudiceService } from "./JudiceService"
+import type { Lawsuit } from "./LawsuitService"
 import type {
   Movimentation,
   MovimentationService,
@@ -14,6 +15,43 @@ export class MovimentationJudiceService {
     private publicationsService: PublicationsService,
     private publicationJudiceService: PublicationJudiceService,
   ) {}
+
+  async fetchMovimentationsByLawsuit(lawsuit: Lawsuit) {
+    const movimentations = await this.judiceService.getAudienciasByJudiceId(
+      lawsuit.judiceId,
+    )
+
+    return movimentations.map(async (movimentation) => {
+      if (
+        !movimentation ||
+        !movimentation.date ||
+        !movimentation.judiceId ||
+        !movimentation.lastModification
+      ) {
+        console.log("Invalid movimentation", movimentation)
+        throw new Error("Invalid movimentation")
+      }
+
+      const dbMovimentation =
+        await this.movimentationService.getMovimentationByJudiceId(
+          movimentation.judiceId,
+        )
+
+      if (dbMovimentation) {
+        return dbMovimentation
+      }
+
+      const newMovimentation =
+        await this.movimentationService.createMovimentation({
+          judiceId: movimentation.judiceId,
+          type: movimentation.type === "audiencia" ? "AUDIENCIA" : "PERICIA",
+          expeditionDate: movimentation.lastModification,
+          finalDate: movimentation.date,
+          lawsuitId: lawsuit.id,
+        })
+      return newMovimentation
+    })
+  }
 
   /**
    * Updates the publcations that have been read and

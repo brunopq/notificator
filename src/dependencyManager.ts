@@ -1,4 +1,5 @@
 import { type databaseType, db } from "./database"
+
 import { ClientJudiceService } from "./services/ClientJudiceService"
 import { ClientService } from "./services/ClientService"
 import { JudiceService, createJudiceApiClient } from "./services/JudiceService"
@@ -11,6 +12,8 @@ import { PublicationJudiceService } from "./services/PublicationJudiceService"
 import { PublicationsService } from "./services/PublicationsService"
 import { SchedulerService } from "./services/SchedulerService"
 import { WhatsappService } from "./services/WhatsappService"
+
+import { NotifyByLawsuitCNJ } from "./useCases/NotifyByLawsuitCNJ"
 
 import { JudiceController } from "./controllers/JudiceController"
 import { LawsuitController } from "./controllers/LawsuitController"
@@ -32,6 +35,8 @@ class DependencyManager {
   private publicationJudiceService: PublicationJudiceService
   private movimentationJudiceService: MovimentationJudiceService
   private notificationService: NotificationService
+
+  private notifyByLawsuitCNJUseCase: NotifyByLawsuitCNJ
 
   private judiceController: JudiceController
   private lawsuitController: LawsuitController
@@ -74,6 +79,13 @@ class DependencyManager {
       this.judiceService,
       this.publicationService,
       this.publicationJudiceService,
+    )
+
+    this.notifyByLawsuitCNJUseCase = new NotifyByLawsuitCNJ(
+      this.lawsuitJudiceService,
+      this.movimentationJudiceService,
+      this.movimentationService,
+      this.notificationService,
     )
 
     this.judiceController = new JudiceController(this.judiceService)
@@ -145,6 +157,10 @@ class DependencyManager {
 
   getNotificationService() {
     return this.notificationService
+  }
+
+  getNotifyByLawsuitCNJUseCase() {
+    return this.notifyByLawsuitCNJUseCase
   }
 
   getJudiceController() {
