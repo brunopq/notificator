@@ -3,6 +3,7 @@ import { TZDate } from "@date-fns/tz"
 import axios, { AxiosError, type AxiosInstance } from "axios"
 import { wrapper } from "axios-cookiejar-support"
 import * as cheerio from "cheerio"
+import { parse as parseCSV } from "csv"
 import { parse } from "date-fns"
 import { ptBR } from "date-fns/locale/pt-BR"
 import { CookieJar } from "tough-cookie"
@@ -306,6 +307,7 @@ export class JudiceService {
         }
       }
       console.log("Unknown error on request to Judice API")
+      console.log(e)
       throw new InternalServerError()
     }
   }
@@ -436,6 +438,17 @@ export class JudiceService {
     const parsedInfo = clientInfoSchema.parse(info)
 
     return parsedInfo
+  }
+
+  async getAgendaCSV() {
+    const data = await this.makeRequest("pgj/exportAppointmentsToCSV", {
+      method: "GET",
+    })
+
+    const csv = z.string().parse(data)
+
+    const a = parseCSV(csv, { columns: true, delimiter: ";" })
+    console.log(a.forEach((d) => console.log(d)))
   }
 }
 

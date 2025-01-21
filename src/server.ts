@@ -14,6 +14,7 @@ import { lawsuitRouter } from "@/api/routers/lawsuitRouter"
 import { movimentationRouter } from "@/api/routers/movimentationRouter"
 import { notificationRouter } from "@/api/routers/notificationRouter"
 import { publicationRouter } from "@/api/routers/publicationRouter"
+import { agendaRouter } from "./api/routers/agendaRouter"
 
 const app: Express = express()
 
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }))
 
 // Routes
+app.use("/agenda", agendaRouter)
 app.use("/judice", judiceRouter)
 app.use("/publications", publicationRouter)
 app.use("/lawsuits", lawsuitRouter)

@@ -15,6 +15,7 @@ import { WhatsappService } from "./services/WhatsappService"
 
 import { NotifyByLawsuitCNJ } from "./useCases/NotifyByLawsuitCNJ"
 
+import { AgendaController } from "./controllers/AgendaController"
 import { JudiceController } from "./controllers/JudiceController"
 import { LawsuitController } from "./controllers/LawsuitController"
 import { MovimentationController } from "./controllers/MovimentationController"
@@ -38,6 +39,7 @@ class DependencyManager {
 
   private notifyByLawsuitCNJUseCase: NotifyByLawsuitCNJ
 
+  private agendaController: AgendaController
   private judiceController: JudiceController
   private lawsuitController: LawsuitController
   private movimentationController: MovimentationController
@@ -88,6 +90,7 @@ class DependencyManager {
       this.notificationService,
     )
 
+    this.agendaController = new AgendaController(this.judiceService)
     this.judiceController = new JudiceController(this.judiceService)
     this.lawsuitController = new LawsuitController(
       this.lawsuitService,
@@ -161,6 +164,10 @@ class DependencyManager {
 
   getNotifyByLawsuitCNJUseCase() {
     return this.notifyByLawsuitCNJUseCase
+  }
+
+  getAgendaController() {
+    return this.agendaController
   }
 
   getJudiceController() {
