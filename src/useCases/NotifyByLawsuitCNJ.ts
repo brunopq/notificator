@@ -30,6 +30,8 @@ export class NotifyByLawsuitCNJ {
         notifications: true,
       })
 
+    let notificationsSent = 0
+
     for (const movimentation of movimentations) {
       if (isBefore(movimentation.finalDate, new Date()))
         // movimentation already happened
@@ -46,6 +48,12 @@ export class NotifyByLawsuitCNJ {
         )
 
       const sent = await this.notificationService.send(notification.id)
+      notificationsSent++
+    }
+
+    return {
+      total: movimentations.length,
+      sent: notificationsSent,
     }
   }
 }

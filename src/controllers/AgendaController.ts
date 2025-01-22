@@ -1,10 +1,38 @@
-import type { JudiceService } from "@/services/JudiceService"
 import type { RequestHandler } from "express"
 
-export class AgendaController {
-  constructor(private readonly judiceService: JudiceService) {}
+import type { JudiceService } from "@/services/JudiceService"
+import type { NotifyByLawsuitCNJ } from "@/useCases/NotifyByLawsuitCNJ"
 
-  handleNotificationTasks: RequestHandler = async (_req, _res) => {
-    await this.judiceService.getAgendaCSV()
+export class AgendaController {
+  constructor(
+    private readonly judiceService: JudiceService,
+    private readonly notifyByLawsuitCNJ: NotifyByLawsuitCNJ,
+  ) {}
+
+  // TODO: move to an use case or service
+  handleNotificationTasks: RequestHandler = async (_req, res) => {
+    const agendaAssignments = await this.judiceService.getAgendaCSV()
+
+    let totalSent = 0
+    let totalNotifications = 0
+
+    // TODO: improve this type
+    const lawsuitNotifications: Record<
+      string,
+      Awaited<ReturnType<NotifyByLawsuitCNJ["execute"]>>
+    > = {}
+
+    for (const assignment of agendaAssignments) {
+      const result = await this.notifyByLawsuitCNJ.execute(
+        assignment.lawsuitCNJ,
+      )
+
+      totalSent += result.sent
+      totalNotifications += result.total
+
+      lawsuitNotifications[assignment.lawsuitCNJ] = result
+    }
+
+    res.json({ totalSent, totalNotifications, lawsuitNotifications })
   }
 }

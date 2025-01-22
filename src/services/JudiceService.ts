@@ -155,6 +155,28 @@ const clientInfoSchema = z.object({
   celular: z.string().optional(),
 })
 
+const agendaAssignmentSchema = z.object({
+  Data: z.string(),
+  "Data Fatal": z.string(),
+  "Data de cadastro": z.string(),
+  Processo: z.string(),
+  Tipo: z.string(),
+  Texto: z.string(),
+  Cliente: z.string(),
+})
+
+const agendaAssignmentMapper = (
+  data: z.infer<typeof agendaAssignmentSchema>,
+) => ({
+  date: parse(data.Data, "dd/MM/yyyy", new Date()),
+  deadline: parse(data["Data Fatal"], "dd/MM/yyyy", new Date()),
+  registrationDate: parse(data["Data de cadastro"], "dd/MM/yyyy", new Date()),
+  lawsuitCNJ: data.Processo,
+  type: data.Tipo,
+  text: data.Texto,
+  client: data.Cliente,
+})
+
 type RequestOptions = {
   method: "GET" | "POST"
   body?: ParsedUrlQueryInput
@@ -447,8 +469,11 @@ export class JudiceService {
 
     const csv = z.string().parse(data)
 
-    const a = parseCSV(csv, { columns: true, delimiter: ";" })
-    console.log(a.forEach((d) => console.log(d)))
+    const a = await parseCSV(csv, { columns: true, delimiter: ";" }).toArray()
+
+    return a
+      .map((d) => agendaAssignmentSchema.parse(d))
+      .map(agendaAssignmentMapper)
   }
 }
 
