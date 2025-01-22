@@ -30,6 +30,7 @@ export class NotifyByLawsuitCNJ {
         notifications: true,
       })
 
+    let notificationsCreated = 0
     let notificationsSent = 0
 
     for (const movimentation of movimentations) {
@@ -46,13 +47,19 @@ export class NotifyByLawsuitCNJ {
         await this.notificationService.createInitialNotification(
           movimentation.id,
         )
+      notificationsCreated++
 
-      const sent = await this.notificationService.send(notification.id)
-      notificationsSent++
+      try {
+        const sent = await this.notificationService.send(notification.id)
+        notificationsSent++
+      } catch (e) {
+        console.error(`Error while sending notification ${notification.id}`)
+      }
     }
 
     return {
       total: movimentations.length,
+      created: notificationsCreated,
       sent: notificationsSent,
     }
   }

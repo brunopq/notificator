@@ -141,6 +141,11 @@ const lawsuitInfoSchema = z.object({
   partes: z.string(),
 })
 
+const judiceMethodAjaxGetProcessInfoBarSchema = z.object({
+  info: z.string(),
+  // and some other stuff we dont need
+})
+
 const clientSearchSchema = z.object({
   info: z.string(),
 })
@@ -257,39 +262,45 @@ export class JudiceService {
 
   // TODO: add error handling and logging, this might expolde at any moment
   private async extractLawsuitInfo(data: string) {
-    const $ = cheerio.load(data)
+    try {
+      const $ = cheerio.load(data)
 
-    const client = $("h2.block > a").attr("href")
-    const clientId = Number(client?.match(/\d+$/)?.[0])
+      const client = $("h2.block > a").attr("href")
+      const clientId = Number(client?.match(/\d+$/)?.[0])
 
-    const result = {} as Record<string, string>
+      const result = {} as Record<string, string>
 
-    $("div.well")
-      .find("b")
-      .each((_, element) => {
-        const key = $(element)
-          .text()
-          .replaceAll(/[:-]/g, "")
-          .trim()
-          .toLowerCase()
+      $("div.well")
+        .find("b")
+        .each((_, element) => {
+          const key = $(element)
+            .text()
+            .replaceAll(/[:-]/g, "")
+            .trim()
+            .toLowerCase()
 
-        const sibling = $(element).get(0)?.nextSibling
-        if (!sibling) return
+          const sibling = $(element).get(0)?.nextSibling
+          if (!sibling) return
 
-        let value = $(sibling).text().trim()
-        value = value.split("-").at(0)?.trim() || value
+          let value = $(sibling).text().trim()
+          value = value.split("-").at(0)?.trim() || value
 
-        if (key) {
-          result[key] = value
-        }
-      })
+          if (key) {
+            result[key] = value
+          }
+        })
 
-    const { cnj, partes } = lawsuitInfoSchema.parse(result)
+      const { cnj, partes } = lawsuitInfoSchema.parse(result)
 
-    return {
-      adverseParty: partes,
-      clientId,
-      cnj,
+      return {
+        adverseParty: partes,
+        clientId,
+        cnj,
+      }
+    } catch (e) {
+      console.error("Extract lawsuit info failed.")
+      console.log(data)
+      console.log(e)
     }
   }
 
@@ -369,13 +380,30 @@ export class JudiceService {
     return parsedResponse.data[0]
   }
 
-  async lawsuitWithMovimentationsByJudiceId(judiceId: number) {
-    const data = await this.makeRequest(`pgj/execution-hearings/${judiceId}`, {
-      method: "GET",
-    })
+  async getLawsuitByJudiceId(judiceId: number) {
+    const data = await this.makeRequest(
+      "pgj/execution-history/methodAjaxGetProcessInfoBar",
+      {
+        method: "POST",
+        body: { processId: judiceId },
+      },
+    )
 
-    const movimentations = await this.extractAudiencias(z.string().parse(data))
-    const lawsuitInfo = await this.extractLawsuitInfo(z.string().parse(data))
+    return await this.extractLawsuitInfo(
+      judiceMethodAjaxGetProcessInfoBarSchema.parse(data).info,
+    )
+  }
+
+  async lawsuitWithMovimentationsByJudiceId(judiceId: number) {
+    const lawsuitInfo = await this.getLawsuitByJudiceId(judiceId)
+
+    if (!lawsuitInfo) {
+      throw new Error(
+        `Lawsuit info is undefined for lawsuit with judice id ${judiceId}`,
+      )
+    }
+
+    const movimentations = await this.getAudienciasByJudiceId(judiceId)
 
     return {
       ...lawsuitInfo,
@@ -474,6 +502,10 @@ export class JudiceService {
     return a
       .map((d) => agendaAssignmentSchema.parse(d))
       .map(agendaAssignmentMapper)
+  }
+
+  async closeAgendaAppointment() {
+    // TODO:
   }
 }
 

@@ -90,7 +90,10 @@ class DependencyManager {
       this.notificationService,
     )
 
-    this.agendaController = new AgendaController(this.judiceService)
+    this.agendaController = new AgendaController(
+      this.judiceService,
+      this.notifyByLawsuitCNJUseCase,
+    )
     this.judiceController = new JudiceController(this.judiceService)
     this.lawsuitController = new LawsuitController(
       this.lawsuitService,
