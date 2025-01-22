@@ -7,6 +7,7 @@ import {
   unexpectedRequestHandler,
   zodErrorHandler,
 } from "@/common/middleware/errorHandler"
+import { requestLoggerMiddleware } from "@/common/middleware/requestLogger"
 import { env } from "@/common/utils/envConfig"
 
 import { judiceRouter } from "@/api/routers/judiceRouter"
@@ -25,6 +26,7 @@ app.set("trust proxy", true)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }))
+app.use(requestLoggerMiddleware)
 
 // Routes
 app.use("/agenda", agendaRouter)
