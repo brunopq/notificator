@@ -53,7 +53,20 @@ export class NotifyByLawsuitCNJ {
         const sent = await this.notificationService.send(notification.id)
         notificationsSent++
       } catch (e) {
-        console.error(`Error while sending notification ${notification.id}`)
+        console.error(
+          `Error while sending notification ${notification.id} for movimentation ${movimentation.id}`,
+        )
+      }
+
+      try {
+        const { notification, schedule } =
+          await this.notificationService.createReminderNotification(
+            movimentation.id,
+          )
+      } catch (e) {
+        console.error(
+          `Could not create reminder notification for movimentation ${movimentation.id}`,
+        )
       }
     }
 

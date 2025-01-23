@@ -13,6 +13,8 @@ export class AgendaController {
   handleNotificationTasks: RequestHandler = async (_req, res) => {
     const agendaAssignments = await this.judiceService.getAgendaCSV()
 
+    console.log(`${agendaAssignments.length} assignments found`)
+
     let totalSent = 0
     let totalNotifications = 0
 
