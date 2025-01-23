@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import type { z } from "zod"
 
@@ -8,14 +9,17 @@ import { lawsuit } from "@/database/schema"
 
 const selectLawsuitSchema = createSelectSchema(lawsuit)
 export const insertLawsuitSchema = createInsertSchema(lawsuit)
+const updateLawsuitSchema = insertLawsuitSchema
+  .partial()
+  .omit({ id: true, judiceId: true })
 
 export type Lawsuit = z.infer<typeof selectLawsuitSchema>
 type NewLawsuit = z.infer<typeof insertLawsuitSchema>
+type UpdateLawsuit = z.infer<typeof updateLawsuitSchema>
 
 export class LawsuitService {
   constructor(private db: typeof database) {}
 
-  // simple
   async listLawsuits(
     pagination: PaginationInput,
   ): Promise<Paginated<typeof selectLawsuitSchema>> {
@@ -35,7 +39,6 @@ export class LawsuitService {
     }
   }
 
-  // simple
   async getByCNJ(cnj: string) {
     const ls = await this.db.query.lawsuit.findFirst({
       where: (lawsuit, { eq }) => eq(lawsuit.cnj, cnj),
@@ -65,5 +68,15 @@ export class LawsuitService {
       .returning()
 
     return createdLawsuit
+  }
+
+  async update(id: string, updateLawsuit: UpdateLawsuit) {
+    const [updatedLawsuit] = await this.db
+      .update(lawsuit)
+      .set(updateLawsuit)
+      .where(eq(lawsuit.id, id))
+      .returning()
+
+    return updatedLawsuit
   }
 }

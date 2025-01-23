@@ -11,6 +11,42 @@ export class LawsuitJudiceService {
     private movimentationService: MovimentationService,
   ) {}
 
+  async getJudiceId(cnj: string) {
+    const lawsuit = await this.judiceService.searchLawsuitByCNJ(cnj)
+    if (!lawsuit) {
+      return null
+    }
+    return lawsuit.f_id
+  }
+
+  async syncLawsuitWithJudice(judiceId: number) {
+    const lawsuitInfo =
+      await this.judiceService.lawsuitWithMovimentationsByJudiceId(judiceId)
+
+    const dbLawsuit = await this.lawsuitService.getByJudiceId(judiceId)
+
+    const client = await this.clientJudiceService.syncClientWithJudice(
+      lawsuitInfo.clientId,
+    )
+
+    // TODO: sync movimentations too
+
+    if (!dbLawsuit) {
+      return this.lawsuitService.create({
+        judiceId,
+        clientId: client.id,
+        cnj: lawsuitInfo.cnj,
+      })
+    }
+
+    // not that this info should ever change, but if we add more fields
+    // to the lawsuit, we can just put them here
+    return this.lawsuitService.update(dbLawsuit.id, {
+      clientId: client.id,
+      cnj: lawsuitInfo.cnj,
+    })
+  }
+
   async getOrCreateByCNJ(cnj: string) {
     const dbLawsuit = await this.lawsuitService.getByCNJ(cnj)
 

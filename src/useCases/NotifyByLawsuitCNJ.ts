@@ -17,11 +17,14 @@ export class NotifyByLawsuitCNJ {
   ) {}
 
   async execute(cnj: string) {
-    const lawsuit = await this.lawsuitJudiceService.getOrCreateByCNJ(cnj)
+    const lawsuitJudiceId = await this.lawsuitJudiceService.getJudiceId(cnj)
 
-    if (!lawsuit) {
-      throw new NotFoundError(`Lawsuit ${cnj} not found`)
+    if (!lawsuitJudiceId) {
+      throw new NotFoundError(`Lawsuit ${cnj} not found in Judice`)
     }
+
+    const lawsuit =
+      await this.lawsuitJudiceService.syncLawsuitWithJudice(lawsuitJudiceId)
 
     await this.movimentationJudiceService.fetchMovimentationsByLawsuit(lawsuit)
 
