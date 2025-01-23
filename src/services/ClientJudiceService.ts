@@ -7,14 +7,8 @@ export class ClientJudiceService {
     private judiceService: JudiceService,
   ) {}
 
-  async getOrCreateByJudiceId(id: number) {
-    const dbClient = await this.clientService.getByJudiceId(id)
-
-    if (dbClient) {
-      return dbClient
-    }
-
-    const clientInfo = await this.judiceService.getClientByJudiceId(id)
+  async syncClientWithJudice(judiceId: number) {
+    const clientInfo = await this.judiceService.getClientByJudiceId(judiceId)
 
     const phones = []
 
@@ -22,13 +16,46 @@ export class ClientJudiceService {
       phones.push(clientInfo.celular)
     }
 
-    const createdClient = await this.clientService.createClient({
-      judiceId: id,
+    const dbClient = await this.clientService.getByJudiceId(judiceId)
+
+    if (!dbClient) {
+      return await this.clientService.createClient({
+        judiceId,
+        name: clientInfo.nome,
+        cpf: clientInfo.cpf,
+        phones,
+      })
+    }
+
+    return await this.clientService.updateClient(dbClient.id, {
       name: clientInfo.nome,
       cpf: clientInfo.cpf,
       phones,
     })
-
-    return createdClient
   }
+
+  // async getOrCreateByJudiceId(id: number) {
+  //   const dbClient = await this.clientService.getByJudiceId(id)
+
+  //   if (dbClient) {
+  //     return dbClient
+  //   }
+
+  //   const clientInfo = await this.judiceService.getClientByJudiceId(id)
+
+  //   const phones = []
+
+  //   if (clientInfo.celular) {
+  //     phones.push(clientInfo.celular)
+  //   }
+
+  //   const createdClient = await this.clientService.createClient({
+  //     judiceId: id,
+  //     name: clientInfo.nome,
+  //     cpf: clientInfo.cpf,
+  //     phones,
+  //   })
+
+  //   return createdClient
+  // }
 }

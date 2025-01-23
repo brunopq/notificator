@@ -8,6 +8,7 @@ import type { Paginated, PaginationInput } from "@/common/models/pagination"
 import { db } from "@/database"
 import { notification } from "@/database/schema"
 
+import type { ClientJudiceService } from "./ClientJudiceService"
 import { selectClientSchema } from "./ClientService"
 import type { MovimentationService } from "./MovimentationService"
 import type { SchedulerService } from "./SchedulerService"
@@ -32,6 +33,7 @@ export class NotificationService {
   constructor(
     private whatsappService: WhatsappService,
     private movimentationService: MovimentationService,
+    private clientJudiceService: ClientJudiceService,
     private schedulerService: SchedulerService,
   ) {}
 
@@ -169,11 +171,12 @@ export class NotificationService {
       throw new Error("Notification already sent")
     }
 
-    if (!noti.client) {
-      throw new Error("Client not found or without phones")
-    }
+    // sync the client to fetch the latest phone number
+    const client = await this.clientJudiceService.syncClientWithJudice(
+      noti.client.judiceId,
+    )
 
-    if (noti.client.phones.length === 0) {
+    if (client.phones.length === 0) {
       throw new Error("Client has no phones")
     }
 

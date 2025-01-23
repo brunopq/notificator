@@ -56,11 +56,6 @@ class DependencyManager {
     this.publicationService = new PublicationsService(this.db)
     this.movimentationService = new MovimentationService(this.db)
 
-    this.notificationService = new NotificationService(
-      this.whatsappService,
-      this.movimentationService,
-      this.schedulerService,
-    )
     this.clientJudiceService = new ClientJudiceService(
       this.clientService,
       this.judiceService,
@@ -81,6 +76,13 @@ class DependencyManager {
       this.judiceService,
       this.publicationService,
       this.publicationJudiceService,
+    )
+
+    this.notificationService = new NotificationService(
+      this.whatsappService,
+      this.movimentationService,
+      this.clientJudiceService,
+      this.schedulerService,
     )
 
     this.notifyByLawsuitCNJUseCase = new NotifyByLawsuitCNJ(

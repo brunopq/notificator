@@ -41,7 +41,7 @@ export class LawsuitJudiceService {
       throw new Error("Judice lawsuit not found")
     }
 
-    const client = await this.clientJudiceService.getOrCreateByJudiceId(
+    const client = await this.clientJudiceService.syncClientWithJudice(
       judiceLawsuit.clientId,
     )
 

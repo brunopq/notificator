@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import type { db as database } from "@/database"
 import { client } from "@/database/schema"
+import { eq } from "drizzle-orm"
 
 export const selectClientSchema = createSelectSchema(client, {
   phones: z.array(z.string()),
@@ -10,9 +11,13 @@ export const selectClientSchema = createSelectSchema(client, {
 const insertClientSchema = createInsertSchema(client, {
   phones: z.array(z.string()),
 })
+const updateClientSchema = insertClientSchema
+  .partial()
+  .omit({ id: true, judiceId: true })
 
 type Client = z.infer<typeof selectClientSchema>
 type NewClient = z.infer<typeof insertClientSchema>
+type UpdateClient = z.infer<typeof updateClientSchema>
 
 export class ClientService {
   constructor(private db: typeof database) {}
@@ -32,5 +37,15 @@ export class ClientService {
       .returning()
 
     return createdClient
+  }
+
+  async updateClient(id: string, updateClient: UpdateClient) {
+    const [updatedClient] = await this.db
+      .update(client)
+      .set(updateClient)
+      .where(eq(client.id, id))
+      .returning()
+
+    return updatedClient
   }
 }
