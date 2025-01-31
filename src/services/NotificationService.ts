@@ -11,8 +11,8 @@ import { notification } from "@/database/schema"
 import type { ClientJudiceService } from "./ClientJudiceService"
 import { selectClientSchema } from "./ClientService"
 import type { MovimentationService } from "./MovimentationService"
+import type { WhatsappService } from "./OfficialWhatsappService"
 import type { SchedulerService } from "./SchedulerService"
-import type { WhatsappService } from "./WhatsappService"
 
 const selectNotificationSchema = createSelectSchema(notification)
 const notificationWithClientSchema = selectNotificationSchema.extend({

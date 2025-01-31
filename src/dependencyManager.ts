@@ -8,6 +8,7 @@ import { LawsuitService } from "./services/LawsuitService"
 import { MovimentationJudiceService } from "./services/MovimentationJudiceService"
 import { MovimentationService } from "./services/MovimentationService"
 import { NotificationService } from "./services/NotificationService"
+import { WhatsappService as OfficialWhatsappService } from "./services/OfficialWhatsappService"
 import { PublicationJudiceService } from "./services/PublicationJudiceService"
 import { PublicationsService } from "./services/PublicationsService"
 import { SchedulerService } from "./services/SchedulerService"
@@ -26,6 +27,7 @@ import { PublicationController } from "./controllers/PublicationController"
 class DependencyManager {
   private schedulerService: SchedulerService
   private whatsappService: WhatsappService
+  private officialWhatsappService: OfficialWhatsappService
   private judiceService: JudiceService
   private clientService: ClientService
   private lawsuitService: LawsuitService
@@ -50,6 +52,7 @@ class DependencyManager {
   constructor(private db: databaseType) {
     this.schedulerService = new SchedulerService()
     this.whatsappService = new WhatsappService()
+    this.officialWhatsappService = new OfficialWhatsappService()
     this.judiceService = new JudiceService(createJudiceApiClient)
     this.clientService = new ClientService(this.db)
     this.lawsuitService = new LawsuitService(this.db)
@@ -79,7 +82,7 @@ class DependencyManager {
     )
 
     this.notificationService = new NotificationService(
-      this.whatsappService,
+      this.officialWhatsappService,
       this.movimentationService,
       this.clientJudiceService,
       this.schedulerService,
@@ -125,6 +128,10 @@ class DependencyManager {
 
   getWhatsappService() {
     return this.whatsappService
+  }
+
+  getOfficialWhatsappService() {
+    return this.officialWhatsappService
   }
 
   getJudiceService() {
