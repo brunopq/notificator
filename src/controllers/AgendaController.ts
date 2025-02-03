@@ -25,7 +25,7 @@ export class AgendaController {
     > = {}
 
     for (const assignment of agendaAssignments) {
-      await new Promise((res) => setTimeout(res, 3000))
+      await new Promise((res) => setTimeout(res, 3 * 60 * 1000))
       const result = await this.notifyByLawsuitCNJ.execute(
         assignment.lawsuitCNJ,
       )
