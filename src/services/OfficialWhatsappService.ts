@@ -72,18 +72,3 @@ export class WhatsappService {
     }
   }
 }
-
-const wpp = new WhatsappService()
-
-await wpp.sendMessage("980223200", "Hello, world!")
-
-// const wpp = new WhatsappService()
-
-// console.log(wpp.formatNumber("+55 11 99999-9999"))
-// console.log(wpp.formatNumber("11 99999-9999"))
-// console.log(wpp.formatNumber("99999-9999"))
-// console.log(wpp.formatNumber("8888-8888"))
-// console.log(wpp.formatNumber("777-7777"))
-// console.log(wpp.formatNumber("666-666"))
-// console.log(wpp.formatNumber("22"))
-// console.log(wpp.formatNumber("1"))
