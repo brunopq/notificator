@@ -44,6 +44,27 @@ export class NotifyByLawsuitCNJ {
 
       if (movimentation.notifications.length > 0) {
         // notification already sent
+        for (const notification of movimentation.notifications) {
+          if (notification.sentAt) {
+            // notification already sent, continue
+            continue
+          }
+          if (notification.isScheduled && notification.scheduleArn) {
+            // notification is scheduled, continue
+            continue
+          }
+
+          // notification is not sent and not scheduled
+          try {
+            await this.notificationService.send(notification.id)
+            notificationsSent++
+          } catch (e) {
+            errorSending = true
+            console.error(
+              `Error while sending notification ${notification.id} for movimentation ${movimentation.id}`,
+            )
+          }
+        }
         continue
       }
 
