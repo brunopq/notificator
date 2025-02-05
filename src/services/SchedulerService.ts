@@ -33,15 +33,20 @@ export class SchedulerService {
     })
     try {
       const response = await schedulerClient.send(scheduleCommand)
+
+      if (!response.ScheduleArn) {
+        throw new Error("No ScheduleArn returned")
+      }
+
       return {
-        success: true,
+        success: true as const,
         scheduleArn: response.ScheduleArn,
       }
     } catch (error) {
       console.error(`Error scheduling notification ${notificationId}:`)
       console.error(error)
       return {
-        success: false,
+        success: false as const,
       }
     }
   }

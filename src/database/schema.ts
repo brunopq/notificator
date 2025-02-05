@@ -22,6 +22,7 @@ const id = () => char({ length: idLength })
 // avoids code duplication
 const object = () => ({
   id: id().$defaultFn(nanoid).primaryKey(),
+  createdAt: timestamp({ withTimezone: true, mode: "date" }).defaultNow(),
 })
 const judiceObject = () => ({
   ...object(),
@@ -38,6 +39,8 @@ export const notification = pgTable("notifications", {
     .notNull(),
   message: text().notNull(),
   sentAt: timestamp({ withTimezone: true, mode: "date" }),
+  isScheduled: boolean().notNull().default(false),
+  scheduleArn: text(),
   recieved: boolean().notNull(),
 })
 

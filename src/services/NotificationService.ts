@@ -77,6 +77,16 @@ export class NotificationService {
     return createdNotification
   }
 
+  async update(id: string, data: Partial<Notification>) {
+    const [updated] = await db
+      .update(notification)
+      .set(data)
+      .where(eq(notification.id, id))
+      .returning()
+
+    return updated
+  }
+
   async createInitialNotification(movimentationId: string) {
     const fullMovimentation =
       await this.movimentationService.getFullMovimentationById(movimentationId)
@@ -154,6 +164,11 @@ export class NotificationService {
       notification.id,
     )
 
+    await this.update(notification.id, {
+      scheduleArn: schedule.scheduleArn,
+      isScheduled: true,
+    })
+
     return { notification, schedule }
   }
 
@@ -177,6 +192,9 @@ export class NotificationService {
     )
 
     if (client.phones.length === 0) {
+      console.warn(
+        `Client ${client.id} has no phones. Notification ${noti.id} not sent`,
+      )
       throw new Error("Client has no phones")
     }
 
@@ -193,11 +211,11 @@ export class NotificationService {
       throw new Error("Message not sent")
     }
 
-    const [updated] = await db
-      .update(notification)
-      .set({ sentAt: new Date() }) // TODO: change to sent message timestamp
-      .where(eq(notification.id, id))
-      .returning()
+    const updated = this.update(id, {
+      sentAt: new Date(),
+      scheduleArn: null,
+      isScheduled: false,
+    })
 
     return updated
   }
