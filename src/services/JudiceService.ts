@@ -184,7 +184,7 @@ const agendaAssignmentMapper = (
 
 type RequestOptions = {
   method: "GET" | "POST"
-  body?: ParsedUrlQueryInput
+  body?: ParsedUrlQueryInput | FormData
 }
 
 export class JudiceService {
@@ -304,6 +304,43 @@ export class JudiceService {
     }
   }
 
+  private async extractAssignments(data: string) {
+    const $ = cheerio.load(data)
+
+    return $("div#agenda li:has(div)")
+      .map((_, el) => {
+        const lawsuitJudiceId = Number.parseInt(
+          $(el).find("a").attr("href")?.replaceAll(/\D/g, "") || "",
+        )
+
+        if (!lawsuitJudiceId) {
+          return
+        }
+
+        const lawsuitCNJ = $(el).find("a").text()
+
+        const [assignmentJudiceId] = $(el)
+          .find("button")
+          .map((_, btn) => {
+            const action = $(btn).attr("onclick")
+            if (action?.includes("loadProceedingAppointmentModal")) {
+              return Number.parseInt(action.split(",")[0].replaceAll(/\D/g, ""))
+            }
+            return undefined
+          })
+          .toArray()
+          .filter(Boolean)
+
+        return {
+          lawsuitJudiceId,
+          lawsuitCNJ,
+          assignmentJudiceId,
+        }
+      })
+      .toArray()
+      .filter(Boolean)
+  }
+
   private async makeRequest(
     path: string,
     options: RequestOptions,
@@ -316,7 +353,10 @@ export class JudiceService {
       const response = await this.httpClient.request({
         url: `https://legala.officeadv.com.br/${path}`,
         method: options.method,
-        data: stringify(options.body),
+        data:
+          options.body instanceof FormData
+            ? options.body
+            : stringify(options.body),
       })
 
       return response.data
@@ -347,6 +387,33 @@ export class JudiceService {
 
   async logoff() {
     await this.makeRequest("pgj/logoff", { method: "GET" })
+  }
+
+  async getAssignments() {
+    const data = await this.makeRequest("pgj", { method: "POST" })
+
+    return await this.extractAssignments(z.string().parse(data))
+  }
+
+  async completeAssignment(assignmentId: number, lawsuitId: number) {
+    // idk if all the fields are necessary, but also idc to figure out
+    const form = new FormData()
+    form.append("appointment_proceeding_rel_id", String(assignmentId))
+    form.append("appointment_proceeding_proc_id", String(lawsuitId))
+    form.append("appointment_proceeding_needchecklist", "0")
+    form.append("is2adv", "0")
+    form.append("cboProceedingType", "1530")
+    form.append("cboProceedingGenerateDocument", "0")
+    form.append("cboProceedingProtocolType", "1")
+    form.append("cboClientView", "0")
+    form.append("tblOthersAppointments_length", "10")
+    const data = await this.makeRequest("pgj/DoProceedingAppointment", {
+      method: "POST",
+      body: form,
+    })
+
+    console.log(data)
+    return data
   }
 
   async getAudienciasByJudiceId(id: number) {
@@ -503,10 +570,9 @@ export class JudiceService {
       .map((d) => agendaAssignmentSchema.parse(d))
       .map(agendaAssignmentMapper)
   }
-
-  async closeAgendaAppointment() {
-    // TODO:
-  }
 }
 
 const extractKeyValuesRegex = /([A-Za-z\s-]+):\s*([^:]+?)(?=\s+[A-Za-z\s]+:|$)/g
+
+const j = new JudiceService(createJudiceApiClient)
+await j.completeAssignment(10347956, 559655)

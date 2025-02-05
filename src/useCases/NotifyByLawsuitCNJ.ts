@@ -35,6 +35,7 @@ export class NotifyByLawsuitCNJ {
 
     let notificationsCreated = 0
     let notificationsSent = 0
+    let errorSending = false
 
     for (const movimentation of movimentations) {
       if (isBefore(movimentation.finalDate, new Date()))
@@ -56,6 +57,7 @@ export class NotifyByLawsuitCNJ {
         const sent = await this.notificationService.send(notification.id)
         notificationsSent++
       } catch (e) {
+        errorSending = true
         console.error(
           `Error while sending notification ${notification.id} for movimentation ${movimentation.id}`,
         )
@@ -77,6 +79,7 @@ export class NotifyByLawsuitCNJ {
       total: movimentations.length,
       created: notificationsCreated,
       sent: notificationsSent,
+      errorSending,
     }
   }
 }

@@ -11,7 +11,7 @@ export class AgendaController {
 
   // TODO: move to an use case or service
   handleNotificationTasks: RequestHandler = async (_req, res) => {
-    const agendaAssignments = await this.judiceService.getAgendaCSV()
+    const agendaAssignments = await this.judiceService.getAssignments()
 
     console.log(`${agendaAssignments.length} assignments found`)
 
@@ -25,15 +25,25 @@ export class AgendaController {
     > = {}
 
     for (const assignment of agendaAssignments) {
-      await new Promise((res) => setTimeout(res, 3 * 60 * 1000))
-      const result = await this.notifyByLawsuitCNJ.execute(
-        assignment.lawsuitCNJ,
-      )
+      try {
+        const result = await this.notifyByLawsuitCNJ.execute(
+          assignment.lawsuitCNJ,
+        )
 
-      totalSent += result.sent
-      totalNotifications += result.total
+        totalSent += result.sent
+        totalNotifications += result.total
 
-      lawsuitNotifications[assignment.lawsuitCNJ] = result
+        lawsuitNotifications[assignment.lawsuitCNJ] = result
+
+        if (!result.errorSending) {
+          await this.judiceService.completeAssignment(
+            assignment.assignmentJudiceId,
+            assignment.lawsuitJudiceId,
+          )
+        }
+      } catch (e) {
+        console.error(e)
+      }
     }
 
     res.json({ totalSent, totalNotifications, lawsuitNotifications })
