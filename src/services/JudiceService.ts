@@ -412,7 +412,6 @@ export class JudiceService {
       body: form,
     })
 
-    console.log(data)
     return data
   }
 

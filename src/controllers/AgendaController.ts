@@ -13,6 +13,8 @@ export class AgendaController {
   handleNotificationTasks: RequestHandler = async (_req, res) => {
     const agendaAssignments = await this.judiceService.getAssignments()
 
+    res.json({ assignmentsFound: agendaAssignments.length })
+
     console.log(`${agendaAssignments.length} assignments found`)
 
     let totalSent = 0
@@ -45,7 +47,5 @@ export class AgendaController {
         console.error(e)
       }
     }
-
-    res.json({ totalSent, totalNotifications, lawsuitNotifications })
   }
 }
