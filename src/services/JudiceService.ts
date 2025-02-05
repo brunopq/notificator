@@ -573,6 +573,3 @@ export class JudiceService {
 }
 
 const extractKeyValuesRegex = /([A-Za-z\s-]+):\s*([^:]+?)(?=\s+[A-Za-z\s]+:|$)/g
-
-const j = new JudiceService(createJudiceApiClient)
-await j.completeAssignment(10347956, 559655)
