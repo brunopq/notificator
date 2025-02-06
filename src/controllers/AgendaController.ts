@@ -37,7 +37,11 @@ export class AgendaController {
 
         lawsuitNotifications[assignment.lawsuitCNJ] = result
 
-        if (!result.errorSending) {
+        if (result.errorSending) {
+          console.error(
+            `Error sending notifications for assignment ${assignment.assignmentJudiceId}, lawsuit: ${assignment.lawsuitCNJ}`,
+          )
+        } else {
           await this.judiceService.completeAssignment(
             assignment.assignmentJudiceId,
             assignment.lawsuitJudiceId,

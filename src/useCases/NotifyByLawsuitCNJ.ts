@@ -61,10 +61,11 @@ export class NotifyByLawsuitCNJ {
           } catch (e) {
             errorSending = true
             console.error(
-              `Error while sending notification ${notification.id} for movimentation ${movimentation.id}`,
+              `Error while sending already created notification ${notification.id} for movimentation ${movimentation.id}`,
             )
           }
         }
+        // don't create new notifications if some exist already
         continue
       }
 
