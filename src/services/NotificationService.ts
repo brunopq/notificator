@@ -187,9 +187,14 @@ export class NotificationService {
     }
 
     // sync the client to fetch the latest phone number
-    const client = await this.clientJudiceService.syncClientWithJudice(
-      noti.client.judiceId,
-    )
+    let client = noti.client
+    try {
+      client = await this.clientJudiceService.syncClientWithJudice(
+        noti.client.judiceId,
+      )
+    } catch (e) {
+      console.error(`Error syncing client ${noti.client.id}`)
+    }
 
     if (client.phones.length === 0) {
       console.warn(
