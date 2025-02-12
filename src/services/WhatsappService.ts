@@ -57,7 +57,7 @@ export class WhatsappService {
         `/message/sendText/${env.WHATSAPP_INSTANCE_ID}`,
         {
           number: jid.jid,
-          textMessage: { text: message },
+          text: message,
         },
       )
 
