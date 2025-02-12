@@ -13,7 +13,7 @@ const whatsappNumbersResponseSchema = z.array(
 export class WhatsappService {
   private httpClient = axios.create({
     baseURL: env.WHATSAPP_SERVICE_URL,
-    headers: { authorization: `bearer ${env.WHATSAPP_INSTANCE_TOKEN}` },
+    headers: { apikey: env.WHATSAPP_INSTANCE_TOKEN },
   })
 
   async isOnWhatsapp(phoneNumber: string) {
