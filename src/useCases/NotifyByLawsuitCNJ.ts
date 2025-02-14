@@ -37,32 +37,24 @@ export class NotifyByLawsuitCNJ {
     let notificationsCreated = 0
     let notificationsSent = 0
     let errorSending = false
+    let everythingPassed = true
 
     for (const movimentation of movimentations) {
       if (isBefore(movimentation.finalDate, new Date()))
         // movimentation already happened
         continue
 
+      // if we go past the last if it means that there is a movimentation that has not happened yet
+      everythingPassed = false
+
       if (movimentation.notifications.length > 0) {
-        // notification already sent
         for (const notification of movimentation.notifications) {
-          if (notification.sentAt) {
+          if (notification.status !== "NOT_SENT") {
             // notification already sent, continue
+            // we will ignore notifications with errors here, they are handled elsewhere
             continue
           }
 
-          // notification is scheduled, continue
-          if (notification.isScheduled || notification.scheduleArn) {
-            if (!(notification.isScheduled && notification.scheduleArn)) {
-              // small warning if notification is inconsistent
-              console.error(
-                `Notification ${notification.id} is inconsistent: isScheduled=${notification.isScheduled}, scheduleArn=${notification.scheduleArn}`,
-              )
-            }
-            continue
-          }
-
-          // notification is not sent and not scheduled
           try {
             await this.notificationService.send(notification.id)
             notificationsSent++
@@ -109,6 +101,7 @@ export class NotifyByLawsuitCNJ {
       total: movimentations.length,
       created: notificationsCreated,
       sent: notificationsSent,
+      everythingPassed,
       errorSending,
     }
   }

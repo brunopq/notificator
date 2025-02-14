@@ -6,7 +6,11 @@ import { z } from "zod"
 import type { Paginated, PaginationInput } from "@/common/models/pagination"
 
 import { db } from "@/database"
-import { notification } from "@/database/schema"
+import {
+  notification,
+  notificationErrors,
+  notificationStatus,
+} from "@/database/schema"
 
 import type { ClientJudiceService } from "./ClientJudiceService"
 import { selectClientSchema } from "./ClientService"
@@ -18,12 +22,17 @@ const selectNotificationSchema = createSelectSchema(notification)
 const notificationWithClientSchema = selectNotificationSchema.extend({
   client: selectClientSchema,
 })
+const notificationErrorsSchema = z.enum(notificationErrors.enumValues)
+const notificationStatusSchema = z.enum(notificationStatus.enumValues)
 export const insertNotificationSchema = z.object({
   movimentationId: z.string(),
   clientId: z.string(),
   message: z.string(),
   sentAt: z.date().nullish(),
   recieved: z.boolean().default(false),
+  scheduleArn: z.string().nullish(),
+  status: notificationStatusSchema,
+  error: notificationErrorsSchema.nullish(),
 })
 
 export type Notification = z.infer<typeof selectNotificationSchema>
@@ -115,9 +124,8 @@ export class NotificationService {
       clientId: fullMovimentation.lawsuit.client.id,
       message: `Olá, ${clientName}. Estamos entrando em contato pois foi agendada uma ${movimentationType} no seu processo ${fullMovimentation.lawsuit.cnj} para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy")}.\nPerto da data da ${movimentationType} enviaremos outra notificação com mais detalhes. Para mais informações estamos a sua disposição.`,
       recieved: false,
+      status: "NOT_SENT",
     })
-
-    console.log(`Notification ${notification.id} created`)
 
     return notification
   }
@@ -157,6 +165,7 @@ export class NotificationService {
       clientId: fullMovimentation.lawsuit.client.id,
       message: `Olá, ${clientName}. Estamos enviando essa mensagem pois há uma ${fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"} agendada em seu processo ${fullMovimentation.lawsuit.cnj} para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy")}, duas semanas a partir de hoje.`,
       recieved: false,
+      status: "NOT_SENT",
     })
 
     const schedule = await this.schedulerService.scheduleNotificationSending(
@@ -166,7 +175,7 @@ export class NotificationService {
 
     await this.update(notification.id, {
       scheduleArn: schedule.scheduleArn,
-      isScheduled: true,
+      status: "SCHEDULED",
     })
 
     return { notification, schedule }
@@ -182,8 +191,10 @@ export class NotificationService {
       throw new Error("Notification not found")
     }
 
-    if (noti.sentAt) {
-      throw new Error("Notification already sent")
+    if (noti.status !== "NOT_SENT") {
+      throw new Error(
+        "Cannot send notification with status different from NOT_SENT",
+      )
     }
 
     // sync the client to fetch the latest phone number
@@ -200,6 +211,10 @@ export class NotificationService {
       console.warn(
         `Client ${client.id} has no phones. Notification ${noti.id} not sent`,
       )
+      await this.update(id, {
+        status: "ERROR",
+        error: "NO_PHONE_NUMBER",
+      })
       throw new Error("Client has no phones")
     }
 
@@ -210,16 +225,22 @@ export class NotificationService {
       noti.message,
     )
 
-    console.log(sentMessage)
+    if (sentMessage.error) {
+      await this.update(id, {
+        status: "ERROR",
+        error:
+          sentMessage.error === "not_on_whatsapp"
+            ? "PHONE_NOT_ON_WHATSAPP"
+            : "UNKNOWN_ERROR",
+      })
 
-    if (!sentMessage) {
       throw new Error("Message not sent")
     }
 
-    const updated = this.update(id, {
+    const updated = await this.update(id, {
       sentAt: new Date(),
-      scheduleArn: null,
-      isScheduled: false,
+      status: "SENT",
+      error: null,
     })
 
     return updated

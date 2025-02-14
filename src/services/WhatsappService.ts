@@ -50,7 +50,7 @@ export class WhatsappService {
 
       if (!jid.exists) {
         console.log(`Number ${phoneNumber} is not on WhatsApp`)
-        return
+        return { error: "not_on_whatsapp" as const }
       }
 
       const res = await this.httpClient.post(
@@ -61,12 +61,14 @@ export class WhatsappService {
         },
       )
 
-      return res.data
+      return { data: res.data }
     } catch (e) {
       if (isAxiosError(e)) {
         console.log("Error sending message")
         console.log(e.response?.data)
       }
+
+      return { error: "unknown" as const }
     }
   }
 }

@@ -47,6 +47,14 @@ export class AgendaController {
             assignment.lawsuitJudiceId,
           )
         }
+
+        if (result.everythingPassed) {
+          console.log("assigmnet expired :(")
+          await this.judiceService.completeAssignment(
+            assignment.assignmentJudiceId,
+            assignment.lawsuitJudiceId,
+          )
+        }
       } catch (e) {
         console.error(e)
       }

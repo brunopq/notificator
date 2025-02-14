@@ -50,6 +50,13 @@
       "when": 1738778855926,
       "tag": "0006_rapid_karen_page",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1739556236357,
+      "tag": "0007_bright_eternity",
+      "breakpoints": true
     }
   ]
 }

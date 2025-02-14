@@ -31,6 +31,20 @@ const judiceObject = () => ({
 
 //
 
+export const notificationStatus = pgEnum("notification_status", [
+  "NOT_SENT",
+  "SENT",
+  "SCHEDULED",
+  "ERROR",
+])
+
+export const notificationErrors = pgEnum("notification_errors", [
+  "NO_PHONE_NUMBER",
+  "INVALID_PHONE",
+  "PHONE_NOT_ON_WHATSAPP",
+  "UNKNOWN_ERROR",
+])
+
 export const notification = pgTable("notifications", {
   ...object(),
   movimentationId: id().references(() => movimentation.id),
@@ -39,9 +53,10 @@ export const notification = pgTable("notifications", {
     .notNull(),
   message: text().notNull(),
   sentAt: timestamp({ withTimezone: true, mode: "date" }),
-  isScheduled: boolean().notNull().default(false),
   scheduleArn: text(),
   recieved: boolean().notNull(),
+  status: notificationStatus().notNull().default("NOT_SENT"),
+  error: notificationErrors(),
 })
 
 export const notificationRelations = relations(notification, ({ one }) => ({
