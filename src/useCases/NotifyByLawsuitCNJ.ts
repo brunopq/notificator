@@ -49,8 +49,15 @@ export class NotifyByLawsuitCNJ {
             // notification already sent, continue
             continue
           }
-          if (notification.isScheduled && notification.scheduleArn) {
-            // notification is scheduled, continue
+
+          // notification is scheduled, continue
+          if (notification.isScheduled || notification.scheduleArn) {
+            if (!(notification.isScheduled && notification.scheduleArn)) {
+              // small warning if notification is inconsistent
+              console.error(
+                `Notification ${notification.id} is inconsistent: isScheduled=${notification.isScheduled}, scheduleArn=${notification.scheduleArn}`,
+              )
+            }
             continue
           }
 
