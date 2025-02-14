@@ -32,7 +32,7 @@ export class LawsuitJudiceService {
     // TODO: sync movimentations too
 
     if (!dbLawsuit) {
-      return this.lawsuitService.create({
+      return await this.lawsuitService.create({
         judiceId,
         clientId: client.id,
         cnj: lawsuitInfo.cnj,
@@ -41,7 +41,7 @@ export class LawsuitJudiceService {
 
     // not that this info should ever change, but if we add more fields
     // to the lawsuit, we can just put them here
-    return this.lawsuitService.update(dbLawsuit.id, {
+    return await this.lawsuitService.update(dbLawsuit.id, {
       clientId: client.id,
       cnj: lawsuitInfo.cnj,
     })

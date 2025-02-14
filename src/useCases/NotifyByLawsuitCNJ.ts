@@ -25,6 +25,7 @@ export class NotifyByLawsuitCNJ {
 
     const lawsuit =
       await this.lawsuitJudiceService.syncLawsuitWithJudice(lawsuitJudiceId)
+    console.log(lawsuit)
 
     await this.movimentationJudiceService.fetchMovimentationsByLawsuit(lawsuit)
 

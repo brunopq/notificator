@@ -71,6 +71,7 @@ export class LawsuitService {
   }
 
   async update(id: string, updateLawsuit: UpdateLawsuit) {
+    console.log(`Updating lawsuit with id ${id} to cnj ${updateLawsuit.cnj}`)
     const [updatedLawsuit] = await this.db
       .update(lawsuit)
       .set(updateLawsuit)
