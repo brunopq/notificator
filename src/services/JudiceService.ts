@@ -283,7 +283,10 @@ export class JudiceService {
           if (!sibling) return
 
           let value = $(sibling).text().trim()
-          value = value.split("-").at(0)?.trim() || value
+          // cnj has a '-' in it, so we don't split it
+          if (key !== "processo" && key !== "cnj") {
+            value = value.split("-").at(0)?.trim() || value
+          }
 
           if (key) {
             result[key] = value
