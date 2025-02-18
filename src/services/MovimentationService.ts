@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import type { z } from "zod"
 
@@ -95,5 +96,18 @@ export class MovimentationService {
       .returning()
 
     return createdMovimentation
+  }
+
+  async updateMovimentation(
+    id: string,
+    newMovimentation: Partial<Movimentation>,
+  ) {
+    const [updatedMovimentation] = await this.db
+      .update(movimentation)
+      .set(newMovimentation)
+      .where(eq(movimentation.id, id))
+      .returning()
+
+    return updatedMovimentation
   }
 }

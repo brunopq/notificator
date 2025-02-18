@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { type ParsedUrlQueryInput, stringify } from "node:querystring"
 import { TZDate } from "@date-fns/tz"
 import axios, { AxiosError, type AxiosInstance } from "axios"
@@ -199,6 +200,10 @@ export class JudiceService {
     const arr = res
       .map((i, el) =>
         $(el).extract({
+          isActive: {
+            selector: "div.calendar",
+            value: (el) => $(el).hasClass("green"),
+          },
           date: {
             selector: "div.calendar",
             value: (el) =>

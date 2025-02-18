@@ -57,6 +57,13 @@
       "when": 1739556236357,
       "tag": "0007_bright_eternity",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1739897880915,
+      "tag": "0008_narrow_joystick",
+      "breakpoints": true
     }
   ]
 }

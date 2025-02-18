@@ -42,19 +42,26 @@ export class MovimentationJudiceService {
             movimentation.judiceId,
           )
 
-        if (dbMovimentation) {
-          return dbMovimentation
+        if (!dbMovimentation) {
+          const newMovimentation =
+            await this.movimentationService.createMovimentation({
+              judiceId: movimentation.judiceId,
+              type:
+                movimentation.type === "audiencia" ? "AUDIENCIA" : "PERICIA",
+              expeditionDate: movimentation.lastModification,
+              finalDate: movimentation.date,
+              lawsuitId: lawsuit.id,
+              isActive: movimentation.isActive,
+            })
+          return newMovimentation
         }
 
-        const newMovimentation =
-          await this.movimentationService.createMovimentation({
-            judiceId: movimentation.judiceId,
-            type: movimentation.type === "audiencia" ? "AUDIENCIA" : "PERICIA",
-            expeditionDate: movimentation.lastModification,
-            finalDate: movimentation.date,
-            lawsuitId: lawsuit.id,
-          })
-        return newMovimentation
+        return await this.movimentationService.updateMovimentation(
+          dbMovimentation.id,
+          {
+            isActive: movimentation.isActive,
+          },
+        )
       }),
     )
   }
@@ -109,6 +116,7 @@ export class MovimentationJudiceService {
             expeditionDate: createdAudiencia.lastModification,
             finalDate: createdAudiencia.date,
             lawsuitId: p.lawsuitId,
+            isActive: createdAudiencia.isActive,
           })
 
         // sets the movimentation id

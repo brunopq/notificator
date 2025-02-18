@@ -25,6 +25,12 @@ export class NotifyByLawsuitCNJ {
       throw new NotFoundError(`Movimentation ${movimentationId} not found`)
     }
 
+    if (!fullMovimentation.isActive) {
+      // movimentation is not active
+      console.log(`Movimentation ${movimentationId} is not active`)
+      return { notifications: { created: 0, sent: 0, total: 0, error: 0 } }
+    }
+
     if (isBefore(fullMovimentation.finalDate, new Date())) {
       // movimentation already happened
       console.log(`Movimentation ${movimentationId} already happened`)
