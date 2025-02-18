@@ -54,10 +54,10 @@ export class AgendaController {
           console.log(
             `All movimentations for lawsuit ${assignment.lawsuitCNJ} already happened`,
           )
-          // await this.judiceService.completeAssignment(
-          //   assignment.assignmentJudiceId,
-          //   assignment.lawsuitJudiceId,
-          // )
+          await this.judiceService.completeAssignment(
+            assignment.assignmentJudiceId,
+            assignment.lawsuitJudiceId,
+          )
           continue
         }
 
