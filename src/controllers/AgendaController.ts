@@ -66,10 +66,10 @@ export class AgendaController {
           console.log(
             `Completing assignment for lawsuit ${assignment.lawsuitCNJ}`,
           )
-          // await this.judiceService.completeAssignment(
-          //   assignment.assignmentJudiceId,
-          //   assignment.lawsuitJudiceId,
-          // )
+          await this.judiceService.completeAssignment(
+            assignment.assignmentJudiceId,
+            assignment.lawsuitJudiceId,
+          )
         }
 
         if (notificationsError >= 1) {
