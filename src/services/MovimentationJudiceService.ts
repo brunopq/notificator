@@ -21,36 +21,42 @@ export class MovimentationJudiceService {
       lawsuit.judiceId,
     )
 
-    return movimentations.map(async (movimentation) => {
-      if (
-        !movimentation ||
-        !movimentation.date ||
-        !movimentation.judiceId ||
-        !movimentation.lastModification
-      ) {
-        console.log("Invalid movimentation", movimentation)
-        throw new Error("Invalid movimentation")
-      }
+    console.log(
+      `${movimentations.length} movimentations found in judice for lawsuit ${lawsuit.cnj}`,
+    )
 
-      const dbMovimentation =
-        await this.movimentationService.getMovimentationByJudiceId(
-          movimentation.judiceId,
-        )
+    return await Promise.all(
+      movimentations.map(async (movimentation) => {
+        if (
+          !movimentation ||
+          !movimentation.date ||
+          !movimentation.judiceId ||
+          !movimentation.lastModification
+        ) {
+          console.log("Invalid movimentation", movimentation)
+          throw new Error("Invalid movimentation")
+        }
 
-      if (dbMovimentation) {
-        return dbMovimentation
-      }
+        const dbMovimentation =
+          await this.movimentationService.getMovimentationByJudiceId(
+            movimentation.judiceId,
+          )
 
-      const newMovimentation =
-        await this.movimentationService.createMovimentation({
-          judiceId: movimentation.judiceId,
-          type: movimentation.type === "audiencia" ? "AUDIENCIA" : "PERICIA",
-          expeditionDate: movimentation.lastModification,
-          finalDate: movimentation.date,
-          lawsuitId: lawsuit.id,
-        })
-      return newMovimentation
-    })
+        if (dbMovimentation) {
+          return dbMovimentation
+        }
+
+        const newMovimentation =
+          await this.movimentationService.createMovimentation({
+            judiceId: movimentation.judiceId,
+            type: movimentation.type === "audiencia" ? "AUDIENCIA" : "PERICIA",
+            expeditionDate: movimentation.lastModification,
+            finalDate: movimentation.date,
+            lawsuitId: lawsuit.id,
+          })
+        return newMovimentation
+      }),
+    )
   }
 
   /**

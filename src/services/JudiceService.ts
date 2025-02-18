@@ -399,6 +399,8 @@ export class JudiceService {
   }
 
   async completeAssignment(assignmentId: number, lawsuitId: number) {
+    return // hell nah we testin
+    /*
     // idk if all the fields are necessary, but also idc to figure out
     const form = new FormData()
     form.append("appointment_proceeding_rel_id", String(assignmentId))
@@ -416,6 +418,7 @@ export class JudiceService {
     })
 
     return data
+    */
   }
 
   async getAudienciasByJudiceId(id: number) {

@@ -1,9 +1,10 @@
+import { isBefore } from "date-fns"
+
 import { NotFoundError } from "@/common/errors/HTTPError"
 import type { LawsuitJudiceService } from "@/services/LawsuitJudiceService"
 import type { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
 import type { MovimentationService } from "@/services/MovimentationService"
 import type { NotificationService } from "@/services/NotificationService"
-import { isBefore } from "date-fns"
 
 /**
  * Searches for the lawsuit with the CNJ, checks if there has been a new movimentation and sends a notification.
@@ -16,6 +17,72 @@ export class NotifyByLawsuitCNJ {
     private notificationService: NotificationService,
   ) {}
 
+  private async handleMovimentation(movimentationId: string) {
+    const fullMovimentation =
+      await this.movimentationService.getFullMovimentationById(movimentationId)
+
+    if (!fullMovimentation) {
+      throw new NotFoundError(`Movimentation ${movimentationId} not found`)
+    }
+
+    if (isBefore(fullMovimentation.finalDate, new Date())) {
+      // movimentation already happened
+      console.log(`Movimentation ${movimentationId} already happened`)
+      return { notifications: { created: 0, sent: 0, total: 0, error: 0 } }
+    }
+
+    let notificationsCreated = 0
+    let notificationsError = 0
+    let notificationsSent = 0
+
+    if (fullMovimentation.notifications.length === 0) {
+      console.log(`Creating notifications for movimentation ${movimentationId}`)
+      await this.notificationService.createInitialNotification(movimentationId)
+      notificationsCreated++
+
+      try {
+        await this.notificationService.createReminderNotification(
+          movimentationId,
+        )
+        notificationsCreated++
+      } catch (e) {
+        console.log(
+          `Could not create reminder notification for movimentation ${movimentationId}`,
+        )
+      }
+    }
+
+    const notifications =
+      await this.notificationService.getForMovimentation(movimentationId)
+
+    for (const notification of notifications) {
+      if (notification.status === "NOT_SENT") {
+        try {
+          await this.notificationService.send(notification.id)
+          notificationsSent++
+        } catch (e) {
+          console.log(e)
+          notificationsError++
+        }
+      } else if (notification.status === "SENT") {
+        // notification already sent, not now but in the past
+        notificationsSent++
+      } else if (notification.status === "ERROR") {
+        // notification failed to send
+        notificationsError++
+      }
+    }
+
+    return {
+      notifications: {
+        created: notificationsCreated,
+        sent: notificationsSent,
+        total: notifications.length,
+        error: notificationsError,
+      },
+    }
+  }
+
   async execute(cnj: string) {
     const lawsuitJudiceId = await this.lawsuitJudiceService.getJudiceId(cnj)
 
@@ -27,82 +94,22 @@ export class NotifyByLawsuitCNJ {
       await this.lawsuitJudiceService.syncLawsuitWithJudice(lawsuitJudiceId)
     console.log(lawsuit)
 
-    await this.movimentationJudiceService.fetchMovimentationsByLawsuit(lawsuit)
-
     const movimentations =
-      await this.movimentationService.getMovimentationsByLawsuitId(lawsuit.id, {
-        notifications: true,
-      })
+      await this.movimentationJudiceService.fetchMovimentationsByLawsuit(
+        lawsuit,
+      )
 
-    let notificationsCreated = 0
-    let notificationsSent = 0
-    let errorSending = false
-    let everythingPassed = true
+    console.log(
+      `Found ${movimentations.length} movimentations in lawsuit ${cnj}`,
+    )
 
-    for (const movimentation of movimentations) {
-      if (isBefore(movimentation.finalDate, new Date()))
-        // movimentation already happened
-        continue
+    const movimentationsResult = await Promise.all(
+      movimentations.map(async (movimentation) => ({
+        movimentationId: movimentation.id,
+        ...(await this.handleMovimentation(movimentation.id)),
+      })),
+    )
 
-      // if we go past the last if it means that there is a movimentation that has not happened yet
-      everythingPassed = false
-
-      if (movimentation.notifications.length > 0) {
-        for (const notification of movimentation.notifications) {
-          if (notification.status !== "NOT_SENT") {
-            // notification already sent, continue
-            // we will ignore notifications with errors here, they are handled elsewhere
-            continue
-          }
-
-          try {
-            await this.notificationService.send(notification.id)
-            notificationsSent++
-          } catch (e) {
-            errorSending = true
-            console.error(
-              `Error while sending already created notification ${notification.id} for movimentation ${movimentation.id}`,
-            )
-          }
-        }
-        // don't create new notifications if some exist already
-        continue
-      }
-
-      const notification =
-        await this.notificationService.createInitialNotification(
-          movimentation.id,
-        )
-      notificationsCreated++
-
-      try {
-        const sent = await this.notificationService.send(notification.id)
-        notificationsSent++
-      } catch (e) {
-        errorSending = true
-        console.error(
-          `Error while sending notification ${notification.id} for movimentation ${movimentation.id}`,
-        )
-      }
-
-      try {
-        const { notification, schedule } =
-          await this.notificationService.createReminderNotification(
-            movimentation.id,
-          )
-      } catch (e) {
-        console.error(
-          `Could not create reminder notification for movimentation ${movimentation.id}`,
-        )
-      }
-    }
-
-    return {
-      total: movimentations.length,
-      created: notificationsCreated,
-      sent: notificationsSent,
-      everythingPassed,
-      errorSending,
-    }
+    return movimentationsResult
   }
 }

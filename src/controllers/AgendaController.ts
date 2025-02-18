@@ -17,8 +17,8 @@ export class AgendaController {
 
     console.log(`${agendaAssignments.length} assignments found`)
 
-    let totalSent = 0
-    let totalNotifications = 0
+    const totalSent = 0
+    const totalNotifications = 0
 
     // TODO: improve this type
     const lawsuitNotifications: Record<
@@ -27,37 +27,61 @@ export class AgendaController {
     > = {}
 
     for (const assignment of agendaAssignments) {
+      console.log(`Assignment for lawsuit ${assignment.lawsuitCNJ}`)
       try {
-        const result = await this.notifyByLawsuitCNJ.execute(
+        const movimentationsResult = await this.notifyByLawsuitCNJ.execute(
           assignment.lawsuitCNJ,
         )
 
-        totalSent += result.sent
-        totalNotifications += result.total
+        console.dir(movimentationsResult, { depth: null })
+        lawsuitNotifications[assignment.lawsuitCNJ] = movimentationsResult
 
-        lawsuitNotifications[assignment.lawsuitCNJ] = result
+        const {
+          s: notificationsSent,
+          e: notificationsError,
+          t: totalNotifications,
+        } = movimentationsResult.reduce(
+          (acc, { notifications }) => ({
+            s: acc.s + notifications.sent,
+            e: acc.e + notifications.error,
+            t: acc.t + notifications.total,
+          }),
+          { s: 0, e: 0, t: 0 },
+        )
 
-        if (result.errorSending) {
-          console.error(
-            `Error sending notifications for assignment ${assignment.assignmentJudiceId}, lawsuit: ${assignment.lawsuitCNJ}`,
+        // all movimentations were in the past
+        if (totalNotifications === 0) {
+          console.log(
+            `All movimentations for lawsuit ${assignment.lawsuitCNJ} already happened`,
           )
-        } else {
-          await this.judiceService.completeAssignment(
-            assignment.assignmentJudiceId,
-            assignment.lawsuitJudiceId,
-          )
+          // await this.judiceService.completeAssignment(
+          //   assignment.assignmentJudiceId,
+          //   assignment.lawsuitJudiceId,
+          // )
+          continue
         }
 
-        if (result.everythingPassed) {
-          console.log("assigmnet expired :(")
-          await this.judiceService.completeAssignment(
-            assignment.assignmentJudiceId,
-            assignment.lawsuitJudiceId,
+        // at least one notification has been sent and no errors hapened
+        if (notificationsError === 0 && notificationsSent >= 1) {
+          console.log(
+            `Completing assignment for lawsuit ${assignment.lawsuitCNJ}`,
+          )
+          // await this.judiceService.completeAssignment(
+          //   assignment.assignmentJudiceId,
+          //   assignment.lawsuitJudiceId,
+          // )
+        }
+
+        if (notificationsError >= 1) {
+          console.log(
+            `Error in assignment for lawsuit ${assignment.lawsuitCNJ}`,
           )
         }
       } catch (e) {
+        console.log(`Assignment for lawsuit ${assignment.lawsuitCNJ} blew up`)
         console.error(e)
       }
+      console.log(`Finished assignmet for lawsuit ${assignment.lawsuitCNJ}`)
     }
   }
 }

@@ -64,6 +64,15 @@ export class NotificationService {
     }
   }
 
+  async getForMovimentation(movimentationId: string) {
+    const notifications = await db.query.notification.findMany({
+      where: (n, { eq }) => eq(n.movimentationId, movimentationId),
+      with: { client: true },
+    })
+
+    return notifications
+  }
+
   async show(id: string) {
     const notification = await db.query.notification.findFirst({
       where: (n, { eq }) => eq(n.id, id),
@@ -182,6 +191,7 @@ export class NotificationService {
   }
 
   async send(id: string) {
+    console.log(`Sending notification ${id}...`)
     const noti = await db.query.notification.findFirst({
       where: (n, { eq }) => eq(n.id, id),
       with: { client: true },
@@ -242,6 +252,8 @@ export class NotificationService {
       status: "SENT",
       error: null,
     })
+
+    console.log(`Notification ${id} sent!`)
 
     return updated
   }
