@@ -45,8 +45,6 @@ export class WhatsappService {
   }
 
   async sendMessage(phoneNumber: string, message: string) {
-    return {}
-    /*
     try {
       const jid = await this.isOnWhatsapp(phoneNumber)
 
@@ -72,7 +70,5 @@ export class WhatsappService {
 
       return { error: "unknown" as const }
     }
-
-    */
   }
 }
