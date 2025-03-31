@@ -15,7 +15,7 @@ const updateClientSchema = insertClientSchema
   .partial()
   .omit({ id: true, judiceId: true })
 
-type Client = z.infer<typeof selectClientSchema>
+export type Client = z.infer<typeof selectClientSchema>
 type NewClient = z.infer<typeof insertClientSchema>
 type UpdateClient = z.infer<typeof updateClientSchema>
 

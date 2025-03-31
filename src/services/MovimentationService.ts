@@ -1,22 +1,30 @@
-import { eq } from "drizzle-orm"
-import { createInsertSchema, createSelectSchema } from "drizzle-zod"
-import type { z } from "zod"
+import { eq } from "drizzle-orm";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import type { z } from "zod";
 
-import type { Paginated, PaginationInput } from "@/common/models/pagination"
+import type { Paginated, PaginationInput } from "@/common/models/pagination";
 
-import type { db as database } from "@/database"
-import { movimentation } from "@/database/schema"
+import type { db as database } from "@/database";
+import { movimentation } from "@/database/schema";
 
-const selectMovimentationSchema = createSelectSchema(movimentation)
-export const insertMovimentationSchema = createInsertSchema(movimentation)
+import type { Lawsuit, LawsuitWithClient } from "./LawsuitService";
 
-export type Movimentation = z.infer<typeof selectMovimentationSchema>
-type NewMovimentation = z.infer<typeof insertMovimentationSchema>
+const selectMovimentationSchema = createSelectSchema(movimentation);
+export const insertMovimentationSchema = createInsertSchema(movimentation);
+
+export type Movimentation = z.infer<typeof selectMovimentationSchema>;
+export type MovimentationWithLawsuit = Movimentation & {
+  lawsuit: Lawsuit;
+};
+export type MovimentationWithLawsuitWithClient = Movimentation & {
+  lawsuit: LawsuitWithClient;
+};
+type NewMovimentation = z.infer<typeof insertMovimentationSchema>;
 
 const movimentationWith: {
-  lawsuit?: true
-  notifications?: true
-} = {}
+  lawsuit?: true;
+  notifications?: true;
+} = {};
 
 export class MovimentationService {
   constructor(private db: typeof database) {}
@@ -26,20 +34,20 @@ export class MovimentationService {
    * Returns a list of the movimentations in the database
    */
   async getMovimentations(
-    pagination: PaginationInput,
+    pagination: PaginationInput
   ): Promise<Paginated<typeof selectMovimentationSchema>> {
-    const movimentationCount = await this.db.$count(movimentation)
+    const movimentationCount = await this.db.$count(movimentation);
     const movimentations = await this.db.query.movimentation.findMany({
       limit: pagination.limit,
       offset: pagination.offset,
-    })
+    });
 
     return {
       data: movimentations,
       total: movimentationCount,
       limit: pagination.limit,
       offset: pagination.offset,
-    }
+    };
   }
 
   // simple
@@ -51,12 +59,12 @@ export class MovimentationService {
       with: {
         lawsuit: { with: { client: true } },
       },
-    })
+    });
   }
 
   async getMovimentationsByLawsuitId(
     lawsuitId: string,
-    include = movimentationWith,
+    include = movimentationWith
   ) {
     return await this.db.query.movimentation.findMany({
       where: (movimentation, { eq }) => eq(movimentation.lawsuitId, lawsuitId),
@@ -64,7 +72,7 @@ export class MovimentationService {
         lawsuit: include.lawsuit,
         notifications: include.notifications,
       },
-    })
+    });
   }
 
   // simple
@@ -75,7 +83,7 @@ export class MovimentationService {
     return await this.db.query.movimentation.findFirst({
       with: { lawsuit: { with: { client: true } }, notifications: true },
       where: (movimentation, { eq }) => eq(movimentation.id, id),
-    })
+    });
   }
 
   // simple
@@ -85,7 +93,7 @@ export class MovimentationService {
   async getMovimentationByJudiceId(judiceId: number) {
     return await this.db.query.movimentation.findFirst({
       where: (movimentation, { eq }) => eq(movimentation.judiceId, judiceId),
-    })
+    });
   }
 
   // simple
@@ -93,21 +101,21 @@ export class MovimentationService {
     const [createdMovimentation] = await this.db
       .insert(movimentation)
       .values(newMovimentation)
-      .returning()
+      .returning();
 
-    return createdMovimentation
+    return createdMovimentation;
   }
 
   async updateMovimentation(
     id: string,
-    newMovimentation: Partial<Movimentation>,
+    newMovimentation: Partial<Movimentation>
   ) {
     const [updatedMovimentation] = await this.db
       .update(movimentation)
       .set(newMovimentation)
       .where(eq(movimentation.id, id))
-      .returning()
+      .returning();
 
-    return updatedMovimentation
+    return updatedMovimentation;
   }
 }

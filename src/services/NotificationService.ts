@@ -5,7 +5,7 @@ import { z } from "zod"
 
 import type { Paginated, PaginationInput } from "@/common/models/pagination"
 
-import { db } from "@/database"
+import type { db as database } from "@/database"
 import {
   notification,
   notificationErrors,
@@ -14,7 +14,12 @@ import {
 
 import type { ClientJudiceService } from "./ClientJudiceService"
 import { selectClientSchema } from "./ClientService"
-import type { MovimentationService } from "./MovimentationService"
+import type {
+  Movimentation,
+  MovimentationService,
+  MovimentationWithLawsuit,
+  MovimentationWithLawsuitWithClient,
+} from "./MovimentationService"
 import type { SchedulerService } from "./SchedulerService"
 import type { WhatsappService } from "./WhatsappService"
 
@@ -40,6 +45,7 @@ type NewNotification = z.infer<typeof insertNotificationSchema>
 
 export class NotificationService {
   constructor(
+    private db: typeof database,
     private whatsappService: WhatsappService,
     private movimentationService: MovimentationService,
     private clientJudiceService: ClientJudiceService,
@@ -49,8 +55,8 @@ export class NotificationService {
   async index(
     pagination: PaginationInput,
   ): Promise<Paginated<typeof notificationWithClientSchema>> {
-    const notificationsCount = await db.$count(notification)
-    const notifications = await db.query.notification.findMany({
+    const notificationsCount = await this.db.$count(notification)
+    const notifications = await this.db.query.notification.findMany({
       with: { client: true },
       limit: pagination.limit,
       offset: pagination.offset,
@@ -65,7 +71,7 @@ export class NotificationService {
   }
 
   async getForMovimentation(movimentationId: string) {
-    const notifications = await db.query.notification.findMany({
+    const notifications = await this.db.query.notification.findMany({
       where: (n, { eq }) => eq(n.movimentationId, movimentationId),
       with: { client: true },
     })
@@ -74,7 +80,7 @@ export class NotificationService {
   }
 
   async show(id: string) {
-    const notification = await db.query.notification.findFirst({
+    const notification = await this.db.query.notification.findFirst({
       where: (n, { eq }) => eq(n.id, id),
       with: { client: true, movimentation: true },
     })
@@ -87,7 +93,7 @@ export class NotificationService {
   }
 
   async create(newNotification: NewNotification) {
-    const [createdNotification] = await db
+    const [createdNotification] = await this.db
       .insert(notification)
       .values(newNotification)
       .returning()
@@ -96,13 +102,35 @@ export class NotificationService {
   }
 
   async update(id: string, data: Partial<Notification>) {
-    const [updated] = await db
+    const [updated] = await this.db
       .update(notification)
       .set(data)
       .where(eq(notification.id, id))
       .returning()
 
     return updated
+  }
+
+  public createInitialNotificationMessage(
+    mov: MovimentationWithLawsuitWithClient,
+  ): string {
+    let clientName = mov.lawsuit.client.name.split(" ")[0]
+    clientName =
+      clientName.charAt(0).toLocaleUpperCase() +
+      clientName.toLocaleLowerCase().slice(1)
+    const cnj = mov.lawsuit.cnj
+    const dateWithTime = format(mov.finalDate, "dd/MM/yyyy, HH:mm")
+
+    const movimentationType = mov.type === "AUDIENCIA" ? "audiência" : "perícia"
+
+    let message = `Olá, ${clientName}. Estamos entrando em contato pois foi agendada uma ${movimentationType} no seu processo ${cnj} para o dia ${dateWithTime}.\n`
+    if (mov.type === "AUDIENCIA") {
+      message += `Para sua ${movimentationType}, você vai precisar de tesemunhas, então procure entrar em contato com seus colegas de trabalho com antecedência.\n`
+    } else {
+    }
+    message += `Perto da data da ${movimentationType} enviaremos outra notificação com mais detalhes. Para mais informações estamos a sua disposição.`
+
+    return message
   }
 
   async createInitialNotification(movimentationId: string) {
@@ -114,24 +142,10 @@ export class NotificationService {
       throw new Error("Movimentation not found")
     }
 
-    let clientName = fullMovimentation.lawsuit.client.name.split(" ")[0]
-
-    if (!clientName) {
-      console.log("Client does not have a name")
-      throw new Error("Client does not have a name")
-    }
-
-    clientName =
-      clientName.charAt(0).toLocaleUpperCase() +
-      clientName.toLocaleLowerCase().slice(1)
-
-    const movimentationType =
-      fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"
-
     const notification = await this.create({
       movimentationId: fullMovimentation.id,
       clientId: fullMovimentation.lawsuit.client.id,
-      message: `Olá, ${clientName}. Estamos entrando em contato pois foi agendada uma ${movimentationType} no seu processo ${fullMovimentation.lawsuit.cnj} para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy")}.\nPerto da data da ${movimentationType} enviaremos outra notificação com mais detalhes. Para mais informações estamos a sua disposição.`,
+      message: this.createInitialNotificationMessage(fullMovimentation),
       recieved: false,
       status: "NOT_SENT",
     })
@@ -172,7 +186,14 @@ export class NotificationService {
     const notification = await this.create({
       movimentationId: fullMovimentation.id,
       clientId: fullMovimentation.lawsuit.client.id,
-      message: `Olá, ${clientName}. Estamos enviando essa mensagem pois há uma ${fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"} agendada em seu processo ${fullMovimentation.lawsuit.cnj} para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy")}, duas semanas a partir de hoje.`,
+      message: `Olá, ${clientName}. Estamos enviando essa mensagem pois há uma ${
+        fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"
+      } agendada em seu processo ${
+        fullMovimentation.lawsuit.cnj
+      } para o dia ${format(
+        fullMovimentation.finalDate,
+        "dd/MM/yyyy",
+      )}, duas semanas a partir de hoje.`,
       recieved: false,
       status: "NOT_SENT",
     })
@@ -192,7 +213,7 @@ export class NotificationService {
 
   async send(id: string) {
     console.log(`Sending notification ${id}...`)
-    const noti = await db.query.notification.findFirst({
+    const noti = await this.db.query.notification.findFirst({
       where: (n, { eq }) => eq(n.id, id),
       with: { client: true },
     })

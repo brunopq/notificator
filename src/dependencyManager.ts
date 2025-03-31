@@ -82,6 +82,7 @@ class DependencyManager {
     )
 
     this.notificationService = new NotificationService(
+      this.db,
       this.whatsappService,
       this.movimentationService,
       this.clientJudiceService,
