@@ -1,3 +1,4 @@
+import { tz } from "@date-fns/tz"
 import { format, isBefore, subWeeks } from "date-fns"
 import { eq } from "drizzle-orm"
 import { createSelectSchema } from "drizzle-zod"
@@ -119,7 +120,9 @@ export class NotificationService {
       clientName.charAt(0).toLocaleUpperCase() +
       clientName.toLocaleLowerCase().slice(1)
     const cnj = mov.lawsuit.cnj
-    const dateWithTime = format(mov.finalDate, "dd/MM/yyyy, HH:mm")
+    const dateWithTime = format(mov.finalDate, "dd/MM/yyyy, HH:mm", {
+      in: tz("America/Sao_Paulo"),
+    })
 
     const movimentationType = mov.type === "AUDIENCIA" ? "audiência" : "perícia"
 
@@ -190,10 +193,9 @@ export class NotificationService {
         fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"
       } agendada em seu processo ${
         fullMovimentation.lawsuit.cnj
-      } para o dia ${format(
-        fullMovimentation.finalDate,
-        "dd/MM/yyyy",
-      )}, duas semanas a partir de hoje.`,
+      } para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy", {
+        in: tz("America/Sao_Paulo"),
+      })}, duas semanas a partir de hoje.`,
       recieved: false,
       status: "NOT_SENT",
     })
