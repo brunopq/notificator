@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express"
 
+import type { ExecutionService } from "@/services/ExecutionService"
 import type { JudiceService } from "@/services/JudiceService"
 import type { NotifyByLawsuitCNJ } from "@/useCases/NotifyByLawsuitCNJ"
 
@@ -7,13 +8,16 @@ export class AgendaController {
   constructor(
     private readonly judiceService: JudiceService,
     private readonly notifyByLawsuitCNJ: NotifyByLawsuitCNJ,
+    private readonly executionService: ExecutionService,
   ) {}
 
   // TODO: move to an use case or service
   handleNotificationTasks: RequestHandler = async (_req, res) => {
     const agendaAssignments = await this.judiceService.getAssignments()
 
-    res.json({ assignmentsFound: agendaAssignments.length })
+    const execution = await this.executionService.create()
+
+    res.json({ execution, assignmentsFound: agendaAssignments.length })
 
     console.log(`${agendaAssignments.length} assignments found`)
 
@@ -31,6 +35,7 @@ export class AgendaController {
       try {
         const movimentationsResult = await this.notifyByLawsuitCNJ.execute(
           assignment.lawsuitCNJ,
+          execution.id,
         )
 
         console.dir(movimentationsResult, { depth: null })

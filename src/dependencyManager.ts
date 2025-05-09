@@ -2,6 +2,7 @@ import { type databaseType, db } from "./database"
 
 import { ClientJudiceService } from "./services/ClientJudiceService"
 import { ClientService } from "./services/ClientService"
+import { ExecutionService } from "./services/ExecutionService"
 import { JudiceService, createJudiceApiClient } from "./services/JudiceService"
 import { LawsuitJudiceService } from "./services/LawsuitJudiceService"
 import { LawsuitService } from "./services/LawsuitService"
@@ -17,6 +18,7 @@ import { WhatsappService } from "./services/WhatsappService"
 import { NotifyByLawsuitCNJ } from "./useCases/NotifyByLawsuitCNJ"
 
 import { AgendaController } from "./controllers/AgendaController"
+import { ExecutionController } from "./controllers/ExecutionController"
 import { JudiceController } from "./controllers/JudiceController"
 import { LawsuitController } from "./controllers/LawsuitController"
 import { MovimentationController } from "./controllers/MovimentationController"
@@ -38,6 +40,7 @@ class DependencyManager {
   private publicationJudiceService: PublicationJudiceService
   private movimentationJudiceService: MovimentationJudiceService
   private notificationService: NotificationService
+  private executionService: ExecutionService
 
   private notifyByLawsuitCNJUseCase: NotifyByLawsuitCNJ
 
@@ -48,6 +51,7 @@ class DependencyManager {
   private notificationController: NotificationController
   private notificationFetcherController: NotificationFetcherController
   private publicationController: PublicationController
+  private executionController: ExecutionController
 
   constructor(private db: databaseType) {
     this.schedulerService = new SchedulerService()
@@ -58,6 +62,7 @@ class DependencyManager {
     this.lawsuitService = new LawsuitService(this.db)
     this.publicationService = new PublicationsService(this.db)
     this.movimentationService = new MovimentationService(this.db)
+    this.executionService = new ExecutionService(this.db)
 
     this.clientJudiceService = new ClientJudiceService(
       this.clientService,
@@ -96,9 +101,11 @@ class DependencyManager {
       this.notificationService,
     )
 
+    this.executionController = new ExecutionController(this.executionService)
     this.agendaController = new AgendaController(
       this.judiceService,
       this.notifyByLawsuitCNJUseCase,
+      this.executionService,
     )
     this.judiceController = new JudiceController(this.judiceService)
     this.lawsuitController = new LawsuitController(
@@ -121,6 +128,10 @@ class DependencyManager {
       this.publicationService,
       this.publicationJudiceService,
     )
+  }
+
+  getExecutionService() {
+    return this.executionService
   }
 
   getSchedulerService() {
@@ -177,6 +188,10 @@ class DependencyManager {
 
   getNotifyByLawsuitCNJUseCase() {
     return this.notifyByLawsuitCNJUseCase
+  }
+
+  getExecutionController() {
+    return this.executionController
   }
 
   getAgendaController() {

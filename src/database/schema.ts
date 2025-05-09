@@ -34,6 +34,7 @@ const judiceObject = () => ({
 export const notificationStatus = pgEnum("notification_status", [
   "NOT_SENT",
   "SENT",
+  "WILL_RETRY",
   "SCHEDULED",
   "ERROR",
 ])
@@ -117,6 +118,32 @@ export const movimentation = pgTable("movimentations", {
   finalDate: timestamp({ withTimezone: true, mode: "date" }).notNull(),
   isActive: boolean().default(true),
 })
+
+export const notificationSnapshot = pgTable("notification_snapshots", {
+  ...object(),
+  executionId: id().references(() => execution.id),
+  notificationId: id().references(() => notification.id),
+  status: notificationStatus().notNull(),
+  error: notificationErrors(),
+})
+
+export const execution = pgTable("executions", {
+  ...object(),
+  // timestamp: timestamp({ withTimezone: true, mode: "date" }).notNull(),
+})
+
+export const notificationSnapshotRelations = relations(
+  notificationSnapshot,
+  ({ one }) => ({
+    notification: one(notification, {
+      fields: [notificationSnapshot.notificationId],
+      references: [notification.id],
+    }),
+  }),
+)
+export const executionRelations = relations(execution, ({ many }) => ({
+  notificationSnapshots: many(notificationSnapshot),
+}))
 
 export const movimentationRelations = relations(
   movimentation,

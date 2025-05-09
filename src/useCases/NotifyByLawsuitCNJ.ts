@@ -17,7 +17,10 @@ export class NotifyByLawsuitCNJ {
     private notificationService: NotificationService,
   ) {}
 
-  private async handleMovimentation(movimentationId: string) {
+  private async handleMovimentation(
+    movimentationId: string,
+    executionId: string,
+  ) {
     const fullMovimentation =
       await this.movimentationService.getFullMovimentationById(movimentationId)
 
@@ -43,7 +46,6 @@ export class NotifyByLawsuitCNJ {
 
     if (fullMovimentation.notifications.length === 0) {
       console.log(`Creating notifications for movimentation ${movimentationId}`)
-      await this.notificationService.createInitialNotification(movimentationId)
       notificationsCreated++
 
       try {
@@ -77,6 +79,11 @@ export class NotifyByLawsuitCNJ {
         // notification failed to send
         notificationsError++
       }
+
+      const snapshot = await this.notificationService.createSnapshot(
+        notification.id,
+        executionId,
+      )
     }
 
     return {
@@ -89,7 +96,7 @@ export class NotifyByLawsuitCNJ {
     }
   }
 
-  async execute(cnj: string) {
+  async execute(cnj: string, executionId: string) {
     const lawsuitJudiceId = await this.lawsuitJudiceService.getJudiceId(cnj)
 
     if (!lawsuitJudiceId) {
@@ -112,7 +119,7 @@ export class NotifyByLawsuitCNJ {
     const movimentationsResult = await Promise.all(
       movimentations.map(async (movimentation) => ({
         movimentationId: movimentation.id,
-        ...(await this.handleMovimentation(movimentation.id)),
+        ...(await this.handleMovimentation(movimentation.id, executionId)),
       })),
     )
 

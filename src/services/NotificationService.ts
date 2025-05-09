@@ -10,15 +10,14 @@ import type { db as database } from "@/database"
 import {
   notification,
   notificationErrors,
+  notificationSnapshot,
   notificationStatus,
 } from "@/database/schema"
 
 import type { ClientJudiceService } from "./ClientJudiceService"
 import { selectClientSchema } from "./ClientService"
 import type {
-  Movimentation,
   MovimentationService,
-  MovimentationWithLawsuit,
   MovimentationWithLawsuitWithClient,
 } from "./MovimentationService"
 import type { SchedulerService } from "./SchedulerService"
@@ -258,16 +257,19 @@ export class NotificationService {
       noti.message,
     )
 
-    if (sentMessage.error) {
+    if (sentMessage.error === "not_on_whatsapp") {
       await this.update(id, {
         status: "ERROR",
-        error:
-          sentMessage.error === "not_on_whatsapp"
-            ? "PHONE_NOT_ON_WHATSAPP"
-            : "UNKNOWN_ERROR",
+        error: "PHONE_NOT_ON_WHATSAPP",
       })
 
       throw new Error("Message not sent")
+    }
+    if (sentMessage.error === "unknown") {
+      await this.update(id, {
+        status: "WILL_RETRY",
+        error: "UNKNOWN_ERROR",
+      })
     }
 
     const updated = await this.update(id, {
@@ -279,5 +281,22 @@ export class NotificationService {
     console.log(`Notification ${id} sent!`)
 
     return updated
+  }
+
+  async createSnapshot(notificationId: string, executionId: string) {
+    const notification = await this.show(notificationId)
+
+    if (!notification) {
+      return null
+    }
+
+    const snapshot = await this.db.insert(notificationSnapshot).values({
+      notificationId,
+      executionId,
+      status: notification.status,
+      error: notification.error,
+    })
+
+    return snapshot
   }
 }
