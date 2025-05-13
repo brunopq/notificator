@@ -16,6 +16,7 @@ import { movimentationRouter } from "@/api/routers/movimentationRouter"
 import { notificationRouter } from "@/api/routers/notificationRouter"
 import { publicationRouter } from "@/api/routers/publicationRouter"
 import { agendaRouter } from "./api/routers/agendaRouter"
+import { clientRouter } from "./api/routers/clientRouter"
 import { executionRouter } from "./api/routers/executionRouter"
 
 const app: Express = express()
@@ -37,6 +38,7 @@ app.use("/lawsuits", lawsuitRouter)
 app.use("/movimentations", movimentationRouter)
 app.use("/notifications", notificationRouter)
 app.use("/executions", executionRouter)
+app.use("/clients", clientRouter)
 
 app.get("/ping", (_req, res) => {
   res.json({ message: "pong" })

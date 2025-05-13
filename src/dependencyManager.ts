@@ -18,6 +18,7 @@ import { WhatsappService } from "./services/WhatsappService"
 import { NotifyByLawsuitCNJ } from "./useCases/NotifyByLawsuitCNJ"
 
 import { AgendaController } from "./controllers/AgendaController"
+import { ClientController } from "./controllers/ClientController"
 import { ExecutionController } from "./controllers/ExecutionController"
 import { JudiceController } from "./controllers/JudiceController"
 import { LawsuitController } from "./controllers/LawsuitController"
@@ -52,6 +53,7 @@ class DependencyManager {
   private notificationFetcherController: NotificationFetcherController
   private publicationController: PublicationController
   private executionController: ExecutionController
+  private clientController: ClientController
 
   constructor(private db: databaseType) {
     this.schedulerService = new SchedulerService()
@@ -128,6 +130,7 @@ class DependencyManager {
       this.publicationService,
       this.publicationJudiceService,
     )
+    this.clientController = new ClientController(this.clientService)
   }
 
   getExecutionService() {
@@ -220,6 +223,9 @@ class DependencyManager {
 
   getPublicationController() {
     return this.publicationController
+  }
+  getClientController() {
+    return this.clientController
   }
 }
 

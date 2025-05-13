@@ -22,6 +22,14 @@ type UpdateClient = z.infer<typeof updateClientSchema>
 export class ClientService {
   constructor(private db: typeof database) {}
 
+  async getById(id: string) {
+    const dbClient = await this.db.query.client.findFirst({
+      where: (client, { eq }) => eq(client.id, id),
+    })
+
+    return dbClient
+  }
+
   async getByJudiceId(judiceId: number) {
     const dbClient = await this.db.query.client.findFirst({
       where: (client, { eq }) => eq(client.judiceId, judiceId),
