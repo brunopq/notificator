@@ -19,6 +19,11 @@ export class ExecutionService {
   async list(after?: Date): Promise<Execution[]> {
     const executions = await this.db.query.execution.findMany({
       where: (ex, { gt }) => after && gt(ex.createdAt, after),
+      with: {
+        notificationSnapshots: {
+          with: { notification: true },
+        },
+      },
     })
 
     return executions

@@ -139,6 +139,10 @@ export const notificationSnapshotRelations = relations(
       fields: [notificationSnapshot.notificationId],
       references: [notification.id],
     }),
+    execution: one(execution, {
+      fields: [notificationSnapshot.executionId],
+      references: [execution.id],
+    }),
   }),
 )
 export const executionRelations = relations(execution, ({ many }) => ({
