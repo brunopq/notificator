@@ -46,6 +46,7 @@ export class NotifyByLawsuitCNJ {
 
     if (fullMovimentation.notifications.length === 0) {
       console.log(`Creating notifications for movimentation ${movimentationId}`)
+      await this.notificationService.createInitialNotification(movimentationId)
       notificationsCreated++
 
       try {

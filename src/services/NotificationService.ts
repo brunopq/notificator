@@ -270,6 +270,8 @@ export class NotificationService {
         status: "WILL_RETRY",
         error: "UNKNOWN_ERROR",
       })
+
+      throw new Error("Message not sent")
     }
 
     const updated = await this.update(id, {

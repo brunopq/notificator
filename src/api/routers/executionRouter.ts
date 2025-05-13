@@ -2,7 +2,7 @@ import { Router } from "express"
 
 import DependencyManager from "@/dependencyManager"
 
-const executionRouter = Router()
+export const executionRouter = Router()
 
 const executionController = DependencyManager.getExecutionController()
 
