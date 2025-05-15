@@ -27,8 +27,11 @@ const selectNotificationSchema = createSelectSchema(notification)
 const notificationWithClientSchema = selectNotificationSchema.extend({
   client: selectClientSchema,
 })
-const notificationErrorsSchema = z.enum(notificationErrors.enumValues)
-const notificationStatusSchema = z.enum(notificationStatus.enumValues)
+export const notificationErrorsSchema = z.enum(notificationErrors.enumValues)
+export const notificationStatusSchema = z.enum(notificationStatus.enumValues)
+
+export type NotificationStatus = z.infer<typeof notificationStatusSchema>
+
 export const insertNotificationSchema = z.object({
   movimentationId: z.string(),
   clientId: z.string(),
