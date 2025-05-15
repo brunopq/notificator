@@ -9,7 +9,7 @@ import {
   notificationSnapshot,
 } from "@/database/schema"
 import type { NotificationStatus } from "@/services/NotificationService"
-import { and, between, eq, inArray } from "drizzle-orm"
+import { and, between, desc, eq, inArray } from "drizzle-orm"
 
 const executionSchema = createSelectSchema(execution)
 type Execution = z.infer<typeof executionSchema>
@@ -47,8 +47,7 @@ export class ExecutionService {
         eq(notificationSnapshot.notificationId, notification.id),
       )
       .where(condition)
-
-    console.log(dbStuff)
+      .orderBy(desc(execution.createdAt))
 
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     const executions = new Map<string, any>()
