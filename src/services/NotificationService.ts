@@ -226,7 +226,7 @@ export class NotificationService {
       throw new Error("Notification not found")
     }
 
-    if (noti.status !== "NOT_SENT") {
+    if (noti.status !== "NOT_SENT" && noti.status !== "WILL_RETRY") {
       throw new Error(
         "Cannot send notification with status different from NOT_SENT",
       )

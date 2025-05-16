@@ -24,7 +24,6 @@ export class ExecutionService {
   }
 
   async list(day: Date, statuses?: NotificationStatus[]): Promise<Execution[]> {
-    console.log({ day, statuses })
     let condition = between(execution.createdAt, startOfDay(day), endOfDay(day))
 
     if (statuses && statuses.length > 0) {
