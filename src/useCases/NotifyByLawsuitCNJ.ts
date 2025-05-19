@@ -65,7 +65,10 @@ export class NotifyByLawsuitCNJ {
       await this.notificationService.getForMovimentation(movimentationId)
 
     for (const notification of notifications) {
-      if (notification.status === "NOT_SENT") {
+      if (
+        notification.status === "NOT_SENT" ||
+        notification.status === "WILL_RETRY"
+      ) {
         try {
           await this.notificationService.send(notification.id)
           notificationsSent++
