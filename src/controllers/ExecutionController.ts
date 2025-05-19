@@ -14,11 +14,15 @@ export class ExecutionController {
 
   index: RequestHandler = async (req, res) => {
     const rawDay = req.query.day
-    // const rawNotificationStatuses = req.query.notificationStatuses
+    let rawStatuses = req.query.notificationStatuses
+
+    if (typeof rawStatuses === "string") {
+      rawStatuses = rawStatuses.split(",")
+    }
 
     const { day, notificationStatuses } = indexQuerySchema.parse({
       day: rawDay,
-      notificationStatuses: [],
+      notificationStatuses: rawStatuses,
     })
 
     const executions = await this.executionService.list(
