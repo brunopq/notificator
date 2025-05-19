@@ -1,15 +1,15 @@
-import type { db as database } from "@/database"
 import { endOfDay, startOfDay } from "date-fns"
+import { and, asc, between, desc, eq, inArray } from "drizzle-orm"
 import { createSelectSchema } from "drizzle-zod"
 import type { z } from "zod"
 
+import type { db as database } from "@/database"
 import {
   execution,
   notification,
   notificationSnapshot,
 } from "@/database/schema"
 import type { NotificationStatus } from "@/services/NotificationService"
-import { and, between, desc, eq, inArray } from "drizzle-orm"
 
 const executionSchema = createSelectSchema(execution)
 type Execution = z.infer<typeof executionSchema>
@@ -46,9 +46,10 @@ export class ExecutionService {
         eq(notificationSnapshot.notificationId, notification.id),
       )
       .where(condition)
-      .orderBy(desc(execution.createdAt))
+      .orderBy(desc(execution.createdAt), asc(notification.status))
 
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    // this aggregates the data in a sensible manner
+    // biome-ignore lint/suspicious/noExplicitAny: typing this shit is too hard, any it is
     const executions = new Map<string, any>()
 
     for (const stuff of dbStuff) {
