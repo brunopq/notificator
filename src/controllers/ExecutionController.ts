@@ -16,8 +16,10 @@ export class ExecutionController {
     const rawDay = req.query.day
     let rawStatuses = req.query.notificationStatuses
 
-    if (typeof rawStatuses === "string") {
+    if (typeof rawStatuses === "string" && rawStatuses !== "") {
       rawStatuses = rawStatuses.split(",")
+    } else {
+      rawStatuses = undefined
     }
 
     const { day, notificationStatuses } = indexQuerySchema.parse({
