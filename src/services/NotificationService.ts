@@ -46,6 +46,83 @@ export const insertNotificationSchema = z.object({
 export type Notification = z.infer<typeof selectNotificationSchema>
 type NewNotification = z.infer<typeof insertNotificationSchema>
 
+type NotificationData = {
+  clientName: string
+  lawsuitCNJ: string
+  formatedDate: string
+  formatedTime: string
+}
+type ReminderNotificationData = NotificationData & {
+  timeFromNow: number
+  timeUnit: "dias" | "semanas"
+}
+
+// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
+class NotificationMessageFactory {
+  static create(
+    mov: MovimentationWithLawsuitWithClient,
+    type: "initial" | "reminder" = "initial",
+  ) {
+    let clientName = mov.lawsuit.client.name.split(" ")[0]
+    clientName =
+      clientName.charAt(0).toLocaleUpperCase() +
+      clientName.toLocaleLowerCase().slice(1)
+    const lawsuitCNJ = mov.lawsuit.cnj
+    const formatedDate = format(mov.finalDate, "dd/MM/yyyy", {
+      in: tz("America/Sao_Paulo"),
+    })
+    const formatedTime = format(mov.finalDate, "HH:mm", {
+      in: tz("America/Sao_Paulo"),
+    })
+
+    const data = {
+      clientName,
+      lawsuitCNJ,
+      formatedDate,
+      formatedTime,
+      timeUnit: "semanas",
+      timeFromNow: 2,
+    } satisfies ReminderNotificationData
+
+    let fn: ((data: ReminderNotificationData) => string) | null = null
+
+    if (mov.type === "AUDIENCIA" && type === "initial") {
+      fn = NotificationMessageFactory.initialAudienciaNotification
+    }
+    if (mov.type === "AUDIENCIA" && type === "reminder") {
+      fn = NotificationMessageFactory.reminderAudienciaNotification
+    } else if (mov.type === "PERICIA" && type === "initial") {
+      fn = NotificationMessageFactory.initialPericiaNotification
+    } else if (mov.type === "PERICIA" && type === "initial") {
+      fn = NotificationMessageFactory.reminderPericiaNotification
+    }
+
+    if (fn === null) throw new Error("Unsuported movimentation")
+
+    return fn(data)
+  }
+
+  private static reminderAudienciaNotification(d: ReminderNotificationData) {
+    return `Olá, ${d.clientName}. Estamos enviando essa mensagem pois há uma audiência agendada em seu processo n.º ${d.lawsuitCNJ} para o dia ${d.formatedDate}, às ${d.formatedTime}, ${d.timeFromNow} ${d.timeUnit} a partir de hoje.`
+  }
+
+  private static reminderPericiaNotification(d: ReminderNotificationData) {
+    return `Olá, ${d.clientName}. Estamos enviando essa mensagem pois há uma perícia agendada em seu processo n.º ${d.lawsuitCNJ} para o dia ${d.formatedDate}, às ${d.formatedTime}, ${d.timeFromNow} ${d.timeUnit} a partir de hoje.`
+  }
+
+  private static initialAudienciaNotification(d: NotificationData) {
+    return `Olá, ${d.clientName}. Somos do escritório Iboti Advogados e estamos entrando em contato porque foi agendada uma audiência no seu processo n.º ${d.lawsuitCNJ}, marcada para o dia ${d.formatedDate}, às ${d.formatedTime}.
+
+Você precisa providenciar testemunhas para esta audiência, podendo ser até 3 pessoas. Encaminhe-nos o nome completo e o telefone para contato das testemunhas e aguarde o nosso contato para fornecer demais orientações e informações necessárias.`
+  }
+
+  private static initialPericiaNotification(d: NotificationData) {
+    return `Olá, ${d.clientName}. Somos do escritório Iboti Advogados e estamos entrando em contato porque foi agendada uma perícia no seu processo n.º ${d.lawsuitCNJ}, marcada para o dia ${d.formatedDate}, às ${d.formatedTime}.
+
+Se tiver alguma dúvida, estamos disponíveis para fornecer demais orientações e informações necessárias.`
+  }
+}
+
 export class NotificationService {
   constructor(
     private db: typeof database,
@@ -114,30 +191,6 @@ export class NotificationService {
     return updated
   }
 
-  public createInitialNotificationMessage(
-    mov: MovimentationWithLawsuitWithClient,
-  ): string {
-    let clientName = mov.lawsuit.client.name.split(" ")[0]
-    clientName =
-      clientName.charAt(0).toLocaleUpperCase() +
-      clientName.toLocaleLowerCase().slice(1)
-    const cnj = mov.lawsuit.cnj
-    const dateWithTime = format(mov.finalDate, "dd/MM/yyyy, HH:mm", {
-      in: tz("America/Sao_Paulo"),
-    })
-
-    const movimentationType = mov.type === "AUDIENCIA" ? "audiência" : "perícia"
-
-    let message = `Olá, ${clientName}. Estamos entrando em contato pois foi agendada uma ${movimentationType} no seu processo ${cnj} para o dia ${dateWithTime}.\n`
-    if (mov.type === "AUDIENCIA") {
-      message += `Para sua ${movimentationType}, você vai precisar de tesemunhas, então procure entrar em contato com seus colegas de trabalho com antecedência.\n`
-    } else {
-    }
-    message += `Perto da data da ${movimentationType} enviaremos outra notificação com mais detalhes. Para mais informações estamos a sua disposição.`
-
-    return message
-  }
-
   async createInitialNotification(movimentationId: string) {
     const fullMovimentation =
       await this.movimentationService.getFullMovimentationById(movimentationId)
@@ -147,10 +200,12 @@ export class NotificationService {
       throw new Error("Movimentation not found")
     }
 
+    const message = NotificationMessageFactory.create(fullMovimentation)
+
     const notification = await this.create({
       movimentationId: fullMovimentation.id,
       clientId: fullMovimentation.lawsuit.client.id,
-      message: this.createInitialNotificationMessage(fullMovimentation),
+      message,
       recieved: false,
       status: "NOT_SENT",
     })
@@ -167,17 +222,6 @@ export class NotificationService {
       throw new Error("Movimentation not found")
     }
 
-    let clientName = fullMovimentation.lawsuit.client.name.split(" ")[0]
-
-    if (!clientName) {
-      console.log("Client does not have a name")
-      throw new Error("Client does not have a name")
-    }
-
-    clientName =
-      clientName.charAt(0).toLocaleUpperCase() +
-      clientName.toLocaleLowerCase().slice(1)
-
     const notificationScheduledDate = subWeeks(
       new Date(fullMovimentation.finalDate),
       2,
@@ -191,13 +235,7 @@ export class NotificationService {
     const notification = await this.create({
       movimentationId: fullMovimentation.id,
       clientId: fullMovimentation.lawsuit.client.id,
-      message: `Olá, ${clientName}. Estamos enviando essa mensagem pois há uma ${
-        fullMovimentation.type === "AUDIENCIA" ? "audiência" : "perícia"
-      } agendada em seu processo ${
-        fullMovimentation.lawsuit.cnj
-      } para o dia ${format(fullMovimentation.finalDate, "dd/MM/yyyy", {
-        in: tz("America/Sao_Paulo"),
-      })}, duas semanas a partir de hoje.`,
+      message: NotificationMessageFactory.create(fullMovimentation, "reminder"),
       recieved: false,
       status: "NOT_SENT",
     })
