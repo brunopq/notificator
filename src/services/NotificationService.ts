@@ -93,7 +93,7 @@ class NotificationMessageFactory {
       fn = NotificationMessageFactory.reminderAudienciaNotification
     } else if (mov.type === "PERICIA" && type === "initial") {
       fn = NotificationMessageFactory.initialPericiaNotification
-    } else if (mov.type === "PERICIA" && type === "initial") {
+    } else if (mov.type === "PERICIA" && type === "reminder") {
       fn = NotificationMessageFactory.reminderPericiaNotification
     }
 
