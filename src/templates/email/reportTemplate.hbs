@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Relatório</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #333;
+    }
+    h1 {
+      color: #0073e6;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Relatório de Notificações dia {{reportDay}}</h1>
+  <small>Gerado em {{generatedDatetime}}</small>
+
+  <hr />
+
+  <p>No dia {{reportDay}} foram processadas {{processedMovimentationCount}} movimentações:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Valor</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each items}}
+        <tr>
+          <td>{{this.name}}</td>
+          <td>{{this.value}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <p>Qualquer dúvida, entre em contato conosco.</p>
+</body>
+</html>
