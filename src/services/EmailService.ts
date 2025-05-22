@@ -1,43 +1,54 @@
-import { readFileSync } from "node:fs"
-import path from "node:path"
-import handlebars from "handlebars"
-import { z } from "zod"
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
 
-const reportTemplateParams = z.object({
-  reportDay: z.date(),
-  generatedDatetime: z.date(),
-  processedMovimentationCount: z.number(),
-  items: z.array(
-    z.object({
-      name: z.string(),
-      value: z.string(),
-    }),
-  ),
-})
-type ReportTemplateParams = z.infer<typeof reportTemplateParams>
+import { env } from "@/common/utils/envConfig"
+
+type SendEmailConfig = {
+  to: string
+  cc?: string[]
+  subject: string
+  content: string
+}
 
 export class EmailService {
-  private reportTemplate: string
-
+  private sesClient: SESClient
   constructor() {
-    const emailTemplatesPath = path.resolve(
-      __dirname,
-      "..",
-      "templates",
-      "email",
-    )
-    const reportTemplatePath = path.resolve(
-      emailTemplatesPath,
-      "reportTemplate.hbs",
-    )
-    this.reportTemplate = readFileSync(reportTemplatePath, "utf-8")
+    this.sesClient = new SESClient({
+      region: "sa-east-1",
+      credentials: {
+        accessKeyId: env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+      },
+    })
   }
 
-  renderReport(params: ReportTemplateParams) {
-    const template = handlebars.compile<ReportTemplateParams>(
-      this.reportTemplate,
-    )
+  async sendEmail(config: SendEmailConfig) {
+    const sendEmailCommand = new SendEmailCommand({
+      Source: "registro@ibotiadvogados.com.br",
+      Destination: {
+        ToAddresses: [config.to],
+        CcAddresses: config.cc,
+      },
+      Message: {
+        Subject: {
+          Data: config.subject,
+          Charset: "UTF-8",
+        },
+        Body: {
+          Html: {
+            Data: config.content,
+            Charset: "UTF-8",
+          },
+        },
+      },
+    })
 
-    return template(params)
+    try {
+      const response = await this.sesClient.send(sendEmailCommand)
+
+      return response.MessageId
+    } catch (e) {
+      console.log("Something went wrong when sending email")
+      console.log(e)
+    }
   }
 }

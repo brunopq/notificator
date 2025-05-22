@@ -1,5 +1,4 @@
 import { Router } from "express"
-
 import DependencyManager from "@/dependencyManager"
 
 const agendaRouter = Router()

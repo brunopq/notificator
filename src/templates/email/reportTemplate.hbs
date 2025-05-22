@@ -1,56 +1,56 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Relatório</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      color: #333;
-    }
-    h1 {
-      color: #0073e6;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
-    }
-    th, td {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-    }
-    th {
-      background-color: #f2f2f2;
-      text-align: left;
-    }
-  </style>
-</head>
-<body>
-  <h1>Relatório de Notificações dia {{reportDay}}</h1>
-  <small>Gerado em {{generatedDatetime}}</small>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Relatório</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.4;">
+    <h1>Relatório de Notificações dia {{formatDate reportDate}}</h1>
+    <small>Gerado em {{formatDateTime generatedDatetime}}</small>
 
-  <hr />
+    <hr style="margin: 20px 0;" />
 
-  <p>No dia {{reportDay}} foram processadas {{processedMovimentationCount}} movimentações:</p>
+    <p>No dia {{formatDate reportDate}} foram processadas <strong>{{processedMovimentationCount}}</strong> movimentações:</p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Valor</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each items}}
+    <p>Total de clientes: <strong>{{totalClients}}</strong></p>
+    <p>Clientes notificados com sucesso: <strong>{{totalSuccessfullClients}}</strong></p>
+    <p>Clientes não notificados: <strong style="color: red;">{{totalErrorClients}}</strong></p>
+
+    <h2 style="margin-top: 30px;">Clientes e Movimentações</h2>
+    <table border="1" cellpadding="8" cellspacing="0" width="100%" style="border-collapse: collapse; font-size: 14px;">
+      <thead style="background-color: #f2f2f2;">
         <tr>
-          <td>{{this.name}}</td>
-          <td>{{this.value}}</td>
+          <th align="left">Nome do Cliente</th>
+          <th align="left">Telefone</th>
+          <th align="left">CNJ</th>
+          <th align="left">Tipo</th>
+          <th align="left">Data</th>
+          <th align="left">Notificação</th>
         </tr>
-      {{/each}}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {{#each clients}}
+          {{#each movimentations}}
+            <tr>
+              {{#if @first}}
+                <td rowspan="{{../movimentations.length}}">{{../name}}</td>
+                <td rowspan="{{../movimentations.length}}">{{../phoneNumber}}</td>
+              {{/if}}
+              <td style="background-color: {{#unless notificationSent}} #ffecec {{/unless}};">{{lawsuitCNJ}}</td>
+              <td style="background-color: {{#unless notificationSent}} #ffecec {{/unless}};">{{type}}</td>
+              <td style="background-color: {{#unless notificationSent}} #ffecec {{/unless}};">{{formatDate date}}</td>
+              <td style="background-color: {{#unless notificationSent}} #ffecec {{/unless}};">
+                {{#if notificationSent}}
+                  <span style="color: green;">Enviada</span>
+                {{else}}
+                  <span style="color: red;">Não enviada: {{notificationErrorMessage notificationError}}</span>
+                {{/if}}
+              </td>
+            </tr>
+          {{/each}}
+        {{/each}}
+      </tbody>
+    </table>
 
-  <p>Qualquer dúvida, entre em contato conosco.</p>
-</body>
+  </body>
 </html>

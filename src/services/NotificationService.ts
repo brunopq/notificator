@@ -46,6 +46,8 @@ export const insertNotificationSchema = z.object({
 export type Notification = z.infer<typeof selectNotificationSchema>
 type NewNotification = z.infer<typeof insertNotificationSchema>
 
+export type NotificationError = z.infer<typeof notificationErrorsSchema>
+
 type NotificationData = {
   clientName: string
   lawsuitCNJ: string
