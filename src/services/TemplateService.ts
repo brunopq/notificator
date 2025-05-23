@@ -1,4 +1,4 @@
-import { file } from "bun"
+import { readFileSync } from "node:fs"
 
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale/pt-BR"
@@ -11,8 +11,6 @@ import {
   type NotificationError,
   notificationErrorsSchema,
 } from "./NotificationService"
-
-const rawReportTemplate = await file(reportTemplatePath).text()
 
 const reportTemplateParams = z.object({
   reportDate: z.date(),
@@ -62,6 +60,7 @@ export class TemplateService {
   private reportTemplate: TemplateDelegate<ReportTemplateParams>
 
   constructor() {
+    const rawReportTemplate = readFileSync(reportTemplatePath)
     this.reportTemplate =
       handlebars.compile<ReportTemplateParams>(rawReportTemplate)
   }
