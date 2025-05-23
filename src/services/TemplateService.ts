@@ -1,15 +1,18 @@
-import { readFileSync } from "node:fs"
-import path from "node:path"
+import { file } from "bun"
 
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale/pt-BR"
 import handlebars, { type TemplateDelegate } from "handlebars"
 import { z } from "zod"
 
+import reportTemplatePath from "@/templates/email/reportTemplate.hbs"
+
 import {
   type NotificationError,
   notificationErrorsSchema,
 } from "./NotificationService"
+
+const rawReportTemplate = await file(reportTemplatePath).text()
 
 const reportTemplateParams = z.object({
   reportDate: z.date(),
@@ -59,19 +62,8 @@ export class TemplateService {
   private reportTemplate: TemplateDelegate<ReportTemplateParams>
 
   constructor() {
-    const emailTemplatesPath = path.resolve(
-      import.meta.dirname,
-      "..",
-      "templates",
-      "email",
-    )
-    const reportTemplatePath = path.resolve(
-      emailTemplatesPath,
-      "reportTemplate.hbs",
-    )
-    this.reportTemplate = handlebars.compile<ReportTemplateParams>(
-      readFileSync(reportTemplatePath, "utf-8"),
-    )
+    this.reportTemplate =
+      handlebars.compile<ReportTemplateParams>(rawReportTemplate)
   }
 
   renderReport(params: ReportTemplateParams) {
