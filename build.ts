@@ -2,7 +2,7 @@ console.log("Starting application build...")
 
 const res = await Bun.build({
   entrypoints: ["src/index.ts"],
-  target: "bun",
+  target: "node",
   outdir: "dist",
 })
 
