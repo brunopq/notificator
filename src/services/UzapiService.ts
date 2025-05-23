@@ -15,11 +15,21 @@ export class UzApiService implements IWhatsappService {
     headers: { sessionKey: env.WHATSAPP_INSTANCE_TOKEN },
   })
 
+  private formatNumber(phoneNumber: string) {
+    const p = phoneNumber.replace(/\D/g, "").slice(-9)
+
+    if (p.length < 8) {
+      return null
+    }
+
+    return `5551${p}`
+  }
+
   async isOnWhatsapp(phoneNumber: string) {
     console.log(`Searching for number${phoneNumber}`)
     const res = await this.httpClient.post("/verifyNumber", {
       session: env.WHATSAPP_INSTANCE_ID,
-      number: phoneNumber,
+      number: this.formatNumber(phoneNumber),
     })
 
     const parsed = UzApiVerifyNumberResponseSchema.safeParse(res.data)
@@ -53,7 +63,7 @@ export class UzApiService implements IWhatsappService {
 
       const response = await this.httpClient.post("/sendText", {
         session: env.WHATSAPP_INSTANCE_ID,
-        number: phoneNumber,
+        number: this.formatNumber(phoneNumber),
         text: message,
       })
 
