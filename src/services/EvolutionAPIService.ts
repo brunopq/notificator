@@ -3,6 +3,8 @@ import { z } from "zod"
 
 import { env } from "@/common/utils/envConfig"
 
+import type { IWhatsappService } from "./IWhatsappService"
+
 const whatsappNumbersResponseSchema = z.array(
   z.object({
     jid: z.string(),
@@ -10,7 +12,7 @@ const whatsappNumbersResponseSchema = z.array(
   }),
 )
 
-export class WhatsappService {
+export class EvolutionAPIService implements IWhatsappService {
   private httpClient = axios.create({
     baseURL: env.WHATSAPP_SERVICE_URL,
     headers: { apikey: env.WHATSAPP_INSTANCE_TOKEN },

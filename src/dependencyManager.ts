@@ -4,6 +4,7 @@ import { type databaseType, db } from "./database"
 import { ClientJudiceService } from "./services/ClientJudiceService"
 import { ClientService } from "./services/ClientService"
 import { EmailService } from "./services/EmailService"
+import { EvolutionAPIService } from "./services/EvolutionAPIService"
 import { ExecutionService } from "./services/ExecutionService"
 import { JudiceService, createJudiceApiClient } from "./services/JudiceService"
 import { LawsuitJudiceService } from "./services/LawsuitJudiceService"
@@ -16,7 +17,7 @@ import { PublicationJudiceService } from "./services/PublicationJudiceService"
 import { PublicationsService } from "./services/PublicationsService"
 import { SchedulerService } from "./services/SchedulerService"
 import { TemplateService } from "./services/TemplateService"
-import { WhatsappService } from "./services/WhatsappService"
+import { UzApiService } from "./services/UzapiService"
 
 // USE CASES
 import { NotifyByLawsuitCNJ } from "./useCases/NotifyByLawsuitCNJ"
@@ -38,7 +39,7 @@ import { ReportController } from "./controllers/ReportController"
 class DependencyManager {
   // SERVICES
   private schedulerService: SchedulerService
-  private whatsappService: WhatsappService
+  private evolutionAPIService: EvolutionAPIService
   private officialWhatsappService: OfficialWhatsappService
   private judiceService: JudiceService
   private clientService: ClientService
@@ -53,6 +54,7 @@ class DependencyManager {
   private executionService: ExecutionService
   private emailService: EmailService
   private templateService: TemplateService
+  private uzApiService: UzApiService
 
   // USE CASES
   private notifyByLawsuitCNJUseCase: NotifyByLawsuitCNJ
@@ -74,7 +76,7 @@ class DependencyManager {
   constructor(private db: databaseType) {
     // SERVICES
     this.schedulerService = new SchedulerService()
-    this.whatsappService = new WhatsappService()
+    this.evolutionAPIService = new EvolutionAPIService()
     this.officialWhatsappService = new OfficialWhatsappService()
     this.judiceService = new JudiceService(createJudiceApiClient)
     this.clientService = new ClientService(this.db)
@@ -83,6 +85,7 @@ class DependencyManager {
     this.movimentationService = new MovimentationService(this.db)
     this.executionService = new ExecutionService(this.db)
     this.emailService = new EmailService()
+    this.uzApiService = new UzApiService()
 
     this.clientJudiceService = new ClientJudiceService(
       this.clientService,
@@ -108,7 +111,8 @@ class DependencyManager {
 
     this.notificationService = new NotificationService(
       this.db,
-      this.whatsappService,
+      // this.evolutionAPIService,
+      this.uzApiService,
       this.movimentationService,
       this.clientJudiceService,
       this.schedulerService,
@@ -177,7 +181,7 @@ class DependencyManager {
   }
 
   getWhatsappService() {
-    return this.whatsappService
+    return this.evolutionAPIService
   }
 
   getOfficialWhatsappService() {
@@ -230,6 +234,10 @@ class DependencyManager {
 
   getTemplateService() {
     return this.templateService
+  }
+
+  getUzApiService() {
+    return this.uzApiService
   }
 
   // USE CASES

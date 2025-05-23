@@ -16,12 +16,12 @@ import {
 
 import type { ClientJudiceService } from "./ClientJudiceService"
 import { selectClientSchema } from "./ClientService"
+import type { IWhatsappService } from "./IWhatsappService"
 import type {
   MovimentationService,
   MovimentationWithLawsuitWithClient,
 } from "./MovimentationService"
 import type { SchedulerService } from "./SchedulerService"
-import type { WhatsappService } from "./WhatsappService"
 
 const selectNotificationSchema = createSelectSchema(notification)
 const notificationWithClientSchema = selectNotificationSchema.extend({
@@ -128,7 +128,7 @@ Se tiver alguma dúvida, estamos disponíveis para fornecer demais orientações
 export class NotificationService {
   constructor(
     private db: typeof database,
-    private whatsappService: WhatsappService,
+    private whatsappService: IWhatsappService,
     private movimentationService: MovimentationService,
     private clientJudiceService: ClientJudiceService,
     private schedulerService: SchedulerService,

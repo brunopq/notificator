@@ -1,14 +1,14 @@
 import dependencyManager from "@/dependencyManager"
 import { NotificationService } from "@/services/NotificationService"
 import type { SchedulerService } from "@/services/SchedulerService"
-import type { WhatsappService } from "@/services/WhatsappService"
+import type { EvolutionAPIService } from "@/services/WhatsappService"
 import { NotifyByLawsuitCNJ } from "./NotifyByLawsuitCNJ"
 
 const lawsuitJudiceService = dependencyManager.getLawsuitJudiceService()
 const movimentationService = dependencyManager.getMovimentationService()
 const movimentationJudiceService =
   dependencyManager.getMovimentationJudiceService()
-const whatsappService: Partial<WhatsappService> = {
+const whatsappService: Partial<EvolutionAPIService> = {
   async sendMessage(phoneNumber, message) {
     console.log("Sending message", phoneNumber, message)
     return true
@@ -16,7 +16,7 @@ const whatsappService: Partial<WhatsappService> = {
 }
 
 const notificationService = new NotificationService(
-  whatsappService as WhatsappService,
+  whatsappService as EvolutionAPIService,
   movimentationService,
   {} as SchedulerService,
 )
