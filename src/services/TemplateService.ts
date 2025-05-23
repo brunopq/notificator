@@ -60,7 +60,7 @@ export class TemplateService {
   private reportTemplate: TemplateDelegate<ReportTemplateParams>
 
   constructor() {
-    const rawReportTemplate = readFileSync(reportTemplatePath)
+    const rawReportTemplate = readFileSync(reportTemplatePath, "utf-8")
     this.reportTemplate =
       handlebars.compile<ReportTemplateParams>(rawReportTemplate)
   }
