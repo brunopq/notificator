@@ -5,9 +5,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx watch --clear-screen=false src/index.ts",
-    "build": "tsup",
-    "start": "node dist/index.js",
+    "dev": "bun --bun --watch src/index.ts",
+    "build": "bun --bun build.ts",
+    "start": "cd dist && bun --bun index.js",
     "generate": "drizzle-kit generate",
     "lint": "biome check src/",
     "lint:fix": "biome check src/ --fix",
@@ -25,7 +25,6 @@
     "cors": "^2.8.5",
     "csv": "^6.3.11",
     "date-fns": "^4.1.0",
-    "dotenv": "^16.4.5",
     "drizzle-kit": "^0.28.1",
     "drizzle-orm": "^0.36.4",
     "drizzle-zod": "^0.5.1",
@@ -37,7 +36,6 @@
     "postgres": "^3.4.5",
     "tough-cookie": "^5.0.0",
     "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -46,22 +44,8 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "jest": "^29.7.0",
-    "tsup": "^8.0.2",
-    "tsx": "^4.7.2",
     "typescript": "^5.7.2",
     "vite-tsconfig-paths": "^5.0.0",
     "vitest": "^2.1.6"
-  },
-  "tsup": {
-    "entry": [
-      "src",
-      "!src/**/__tests__/**",
-      "!src/**/*.test.*"
-    ],
-    "splitting": false,
-    "sourcemap": true,
-    "format": "esm",
-    "clean": true
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  }
 }
