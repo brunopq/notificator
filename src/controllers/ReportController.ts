@@ -8,7 +8,7 @@ export class ReportController {
   ) {}
 
   sendNotificationReport: RequestHandler = async (req, res) => {
-    const report = await this.sendNotificationsReportUseCase.execute()
+    const report = await this.sendNotificationsReportUseCase.execute(new Date())
 
     res.sendStatus(200)
   }

@@ -16,8 +16,8 @@ const reportTemplateParams = z.object({
   generatedDatetime: z.date(),
   processedMovimentationCount: z.number(),
   totalClients: z.number(),
-  totalSuccessfullClients: z.number(),
-  totalErrorClients: z.number(),
+  notificationsSent: z.number(),
+  notificationsNotSent: z.number(),
   clients: z.array(
     z.object({
       name: z.string(),

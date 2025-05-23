@@ -122,7 +122,6 @@ class DependencyManager {
       this.db,
       this.emailService,
       this.templateService,
-      this.executionService,
     )
 
     this.notifyByLawsuitCNJUseCase = new NotifyByLawsuitCNJ(

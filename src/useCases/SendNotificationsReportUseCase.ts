@@ -1,7 +1,6 @@
 import { endOfDay, startOfDay } from "date-fns"
 
 import type { EmailService } from "@/services/EmailService"
-import type { ExecutionService } from "@/services/ExecutionService"
 import type {
   ReportTemplateParams,
   TemplateService,
@@ -23,21 +22,17 @@ export class SendNotificationsReportUseCase {
     private readonly db: typeof database,
     private emailService: EmailService,
     private templateService: TemplateService,
-    private executionService: ExecutionService,
   ) {}
 
-  async execute(date = new Date("2025-05-13 12:32:35")) {
-    // encontrar as execuções da data -> pegar movimentações -> processos -> clientes
-    const shit = await this.db
+  async execute(date: Date) {
+    const rawData = await this.db
       .selectDistinct({
         clientName: client.name,
         clientPhones: client.phones,
         movimentation: {
-          movimentationId: movimentation.id,
           lawsuitCNJ: lawsuit.cnj,
           type: movimentation.type,
           date: movimentation.finalDate,
-          notificationId: notification.id,
           notificationStatus: notificationSnapshot.status,
           notificationError: notificationSnapshot.error,
         },
@@ -63,24 +58,19 @@ export class SendNotificationsReportUseCase {
           not(eq(notificationSnapshot.status, "SCHEDULED")),
         ),
       )
-      .orderBy(client.name) // remove this later
-
-    console.log(shit)
-    console.log(`Found ${shit.length} shits`)
+      .orderBy(notificationSnapshot.status)
 
     const clientMap = new Map<string, ReportTemplateParams["clients"][number]>()
 
-    for (const item of shit) {
+    for (const item of rawData) {
       const key = item.clientName
       if (key === null) continue
 
       const clientEntry = clientMap.get(key)
 
       const movimentation = {
-        date: item.movimentation.date,
-        lawsuitCNJ: item.movimentation.lawsuitCNJ,
+        ...item.movimentation,
         notificationSent: item.movimentation.notificationStatus === "SENT",
-        type: item.movimentation.type,
         notificationError: item.movimentation.notificationError || undefined,
       }
 
@@ -96,21 +86,47 @@ export class SendNotificationsReportUseCase {
     }
 
     const grouped = Array.from(clientMap.values())
-    console.dir(grouped, { depth: null })
+
+    // TODO: do this in sql to make it fast as fuck
+    const notificationsSent = grouped.reduce(
+      (acc, c) =>
+        acc +
+        c.movimentations.reduce(
+          (acc, m) => acc + (m.notificationSent ? 1 : 0),
+          0,
+        ),
+      0,
+    )
+    const notificationsNotSent = grouped.reduce(
+      (acc, c) =>
+        acc +
+        c.movimentations.reduce(
+          (acc, m) => acc + (m.notificationSent ? 0 : 1),
+          0,
+        ),
+      0,
+    )
 
     const content = this.templateService.renderReport({
       clients: grouped,
       generatedDatetime: new Date(),
-      processedMovimentationCount: 123,
+      processedMovimentationCount: rawData.length,
       reportDate: date,
-      totalClients: 123,
-      totalErrorClients: 123,
-      totalSuccessfullClients: 123,
+      totalClients: grouped.length,
+      notificationsSent,
+      notificationsNotSent,
     })
 
     await this.emailService.sendEmail({
       to: "iboti@ibotiadvogados.com.br",
       subject: "Relatório de notificações",
+      cc: [
+        "ana@ibotiadvogados.com.br",
+        "anderson@ibotiadvogados.com.br",
+        "adriano@ibotiadvogados.com.br",
+        "bruno@ibotiadvogados.com.br",
+        "rafaelvieira@ibotiadvogados.com.br",
+      ],
       content,
     })
   }
