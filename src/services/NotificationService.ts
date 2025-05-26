@@ -23,6 +23,7 @@ import {
   type MovimentationWithLawsuitWithClient,
 } from "./MovimentationService"
 import { SchedulerService } from "./SchedulerService"
+import { TemplateService } from "./TemplateService"
 
 const selectNotificationSchema = createSelectSchema(notification)
 const notificationWithClientSchema = selectNotificationSchema.extend({
@@ -49,93 +50,20 @@ type NewNotification = z.infer<typeof insertNotificationSchema>
 
 export type NotificationError = z.infer<typeof notificationErrorsSchema>
 
-type NotificationData = {
-  clientName: string
-  lawsuitCNJ: string
-  formatedDate: string
-  formatedTime: string
-}
-type ReminderNotificationData = NotificationData & {
-  timeFromNow: number
-  timeUnit: "dias" | "semanas"
-}
-
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
-class NotificationMessageFactory {
-  static create(
-    mov: MovimentationWithLawsuitWithClient,
-    type: "initial" | "reminder" = "initial",
-  ) {
-    let clientName = mov.lawsuit.client.name.split(" ")[0]
-    clientName =
-      clientName.charAt(0).toLocaleUpperCase() +
-      clientName.toLocaleLowerCase().slice(1)
-    const lawsuitCNJ = mov.lawsuit.cnj
-    const formatedDate = format(mov.finalDate, "dd/MM/yyyy", {
-      in: tz("America/Sao_Paulo"),
-    })
-    const formatedTime = format(mov.finalDate, "HH:mm", {
-      in: tz("America/Sao_Paulo"),
-    })
-
-    const data = {
-      clientName,
-      lawsuitCNJ,
-      formatedDate,
-      formatedTime,
-      timeUnit: "semanas",
-      timeFromNow: 2,
-    } satisfies ReminderNotificationData
-
-    let fn: ((data: ReminderNotificationData) => string) | null = null
-
-    if (mov.type === "AUDIENCIA" && type === "initial") {
-      fn = NotificationMessageFactory.initialAudienciaNotification
-    }
-    if (mov.type === "AUDIENCIA" && type === "reminder") {
-      fn = NotificationMessageFactory.reminderAudienciaNotification
-    } else if (mov.type === "PERICIA" && type === "initial") {
-      fn = NotificationMessageFactory.initialPericiaNotification
-    } else if (mov.type === "PERICIA" && type === "reminder") {
-      fn = NotificationMessageFactory.reminderPericiaNotification
-    }
-
-    if (fn === null) throw new Error("Unsuported movimentation")
-
-    return fn(data)
-  }
-
-  private static reminderAudienciaNotification(d: ReminderNotificationData) {
-    return `Olá, ${d.clientName}. Estamos enviando essa mensagem pois há uma audiência agendada em seu processo n.º ${d.lawsuitCNJ} para o dia ${d.formatedDate}, às ${d.formatedTime}, ${d.timeFromNow} ${d.timeUnit} a partir de hoje.`
-  }
-
-  private static reminderPericiaNotification(d: ReminderNotificationData) {
-    return `Olá, ${d.clientName}. Estamos enviando essa mensagem pois há uma perícia agendada em seu processo n.º ${d.lawsuitCNJ} para o dia ${d.formatedDate}, às ${d.formatedTime}, ${d.timeFromNow} ${d.timeUnit} a partir de hoje.`
-  }
-
-  private static initialAudienciaNotification(d: NotificationData) {
-    return `Olá, ${d.clientName}. Somos do escritório Iboti Advogados e estamos entrando em contato porque foi agendada uma audiência no seu processo n.º ${d.lawsuitCNJ}, marcada para o dia ${d.formatedDate}, às ${d.formatedTime}.
-
-Você precisa providenciar testemunhas para esta audiência, podendo ser até 3 pessoas. Encaminhe-nos o nome completo e o telefone para contato das testemunhas e aguarde o nosso contato para fornecer demais orientações e informações necessárias.`
-  }
-
-  private static initialPericiaNotification(d: NotificationData) {
-    return `Olá, ${d.clientName}. Somos do escritório Iboti Advogados e estamos entrando em contato porque foi agendada uma perícia no seu processo n.º ${d.lawsuitCNJ}, marcada para o dia ${d.formatedDate}, às ${d.formatedTime}.
-
-Se tiver alguma dúvida, estamos disponíveis para fornecer demais orientações e informações necessárias.`
-  }
-}
-
 @injectable()
 export class NotificationService {
   constructor(
-    @inject("database") private db: typeof database,
-    @inject("IWhatsappService") private whatsappService: IWhatsappService,
+    @inject("database") private readonly db: typeof database,
+    @inject("IWhatsappService")
+    private readonly whatsappService: IWhatsappService,
     @inject(MovimentationService)
-    private movimentationService: MovimentationService,
+    private readonly movimentationService: MovimentationService,
     @inject(ClientJudiceService)
-    private clientJudiceService: ClientJudiceService,
-    @inject(SchedulerService) private schedulerService: SchedulerService,
+    private readonly clientJudiceService: ClientJudiceService,
+    @inject(SchedulerService)
+    private readonly schedulerService: SchedulerService,
+    @inject(TemplateService)
+    private readonly templateService: TemplateService,
   ) {}
 
   async index(
@@ -206,7 +134,16 @@ export class NotificationService {
       throw new Error("Movimentation not found")
     }
 
-    const message = NotificationMessageFactory.create(fullMovimentation)
+    const renderer =
+      fullMovimentation.type === "AUDIENCIA"
+        ? this.templateService.renderAudiencia
+        : this.templateService.renderPericia
+
+    const message = renderer({
+      clientName: fullMovimentation.lawsuit.client.name,
+      CNJ: fullMovimentation.lawsuit.cnj,
+      date: fullMovimentation.finalDate,
+    })
 
     const notification = await this.create({
       movimentationId: fullMovimentation.id,
@@ -238,10 +175,22 @@ export class NotificationService {
       throw new Error("Notification scheduled date is in the past")
     }
 
+    const renderer =
+      fullMovimentation.type === "AUDIENCIA"
+        ? this.templateService.renderAudienciaReminder
+        : this.templateService.renderPericiaReminder
+
+    const message = renderer({
+      clientName: fullMovimentation.lawsuit.client.name,
+      CNJ: fullMovimentation.lawsuit.cnj,
+      date: fullMovimentation.finalDate,
+      weeks: 2,
+    })
+
     const notification = await this.create({
       movimentationId: fullMovimentation.id,
       clientId: fullMovimentation.lawsuit.client.id,
-      message: NotificationMessageFactory.create(fullMovimentation, "reminder"),
+      message,
       recieved: false,
       status: "NOT_SENT",
     })
