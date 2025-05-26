@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import { inject, injectable } from "inversify"
 import type { z } from "zod"
 
 import type { Paginated, PaginationInput } from "@/common/models/pagination"
@@ -13,8 +14,9 @@ export const insertPublicationSchema = createInsertSchema(publication)
 export type Publication = z.infer<typeof selectPublicationSchema>
 type NewPublication = z.infer<typeof insertPublicationSchema>
 
+@injectable()
 export class PublicationsService {
-  constructor(private db: typeof database) {}
+  constructor(@inject("database") private db: typeof database) {}
 
   // simple
   async listPublications(

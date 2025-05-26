@@ -1,10 +1,12 @@
 import { Router } from "express"
 
-import DependencyManager from "@/dependencyManager"
+import { EmailTestController } from "@/controllers/EmailTestController"
+
+import dependencyManager from "@/dependencyManager"
 
 const emailRouter = Router()
 
-const emailController = DependencyManager.getEmailTestController()
+const emailController = dependencyManager.get(EmailTestController)
 
 emailRouter.get("/", emailController.show)
 

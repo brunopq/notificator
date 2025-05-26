@@ -1,9 +1,11 @@
 import { Router } from "express"
 
-import DependencyManager from "@/dependencyManager"
+import { ExecutionController } from "@/controllers/ExecutionController"
+
+import dependencyManager from "@/dependencyManager"
 
 export const executionRouter = Router()
 
-const executionController = DependencyManager.getExecutionController()
+const executionController = dependencyManager.get(ExecutionController)
 
 executionRouter.get("/", executionController.index)

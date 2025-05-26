@@ -1,77 +1,79 @@
-import { eq } from "drizzle-orm";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import type { z } from "zod";
+import { eq } from "drizzle-orm"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import { inject, injectable } from "inversify"
+import type { z } from "zod"
 
-import type { Paginated, PaginationInput } from "@/common/models/pagination";
+import type { Paginated, PaginationInput } from "@/common/models/pagination"
 
-import type { db as database } from "@/database";
-import { lawsuit } from "@/database/schema";
-import type { Client } from "./ClientService";
+import type { db as database } from "@/database"
+import { lawsuit } from "@/database/schema"
+import type { Client } from "./ClientService"
 
-const selectLawsuitSchema = createSelectSchema(lawsuit);
-export const insertLawsuitSchema = createInsertSchema(lawsuit);
+const selectLawsuitSchema = createSelectSchema(lawsuit)
+export const insertLawsuitSchema = createInsertSchema(lawsuit)
 const updateLawsuitSchema = insertLawsuitSchema
   .partial()
-  .omit({ id: true, judiceId: true });
+  .omit({ id: true, judiceId: true })
 
-export type Lawsuit = z.infer<typeof selectLawsuitSchema>;
+export type Lawsuit = z.infer<typeof selectLawsuitSchema>
 export type LawsuitWithClient = Lawsuit & {
-  client: Client;
-};
-type NewLawsuit = z.infer<typeof insertLawsuitSchema>;
-type UpdateLawsuit = z.infer<typeof updateLawsuitSchema>;
+  client: Client
+}
+type NewLawsuit = z.infer<typeof insertLawsuitSchema>
+type UpdateLawsuit = z.infer<typeof updateLawsuitSchema>
 
+@injectable()
 export class LawsuitService {
-  constructor(private db: typeof database) {}
+  constructor(@inject("database") private db: typeof database) {}
 
   async listLawsuits(
-    pagination: PaginationInput
+    pagination: PaginationInput,
   ): Promise<Paginated<typeof selectLawsuitSchema>> {
-    const lawsuitsCount = await this.db.$count(lawsuit);
+    const lawsuitsCount = await this.db.$count(lawsuit)
 
     const lawsuits = await this.db.query.lawsuit.findMany({
       with: { client: true },
       limit: pagination.limit,
       offset: pagination.offset,
-    });
+    })
 
     return {
       data: lawsuits,
       total: lawsuitsCount,
       limit: pagination.limit,
       offset: pagination.offset,
-    };
+    }
   }
 
   async getByCNJ(cnj: string) {
     const ls = await this.db.query.lawsuit.findFirst({
       where: (lawsuit, { eq }) => eq(lawsuit.cnj, cnj),
       with: { client: true, movimentations: true },
-    });
-    return ls;
+    })
+    return ls
   }
 
   async getById(id: string) {
     const ls = await this.db.query.lawsuit.findFirst({
       where: (lawsuit, { eq }) => eq(lawsuit.id, id),
       with: { client: true, movimentations: true },
-    });
-    return ls;
+    })
+    return ls
   }
 
   async getByJudiceId(judiceId: number) {
     return await this.db.query.lawsuit.findFirst({
       where: (lawsuit, { eq }) => eq(lawsuit.judiceId, judiceId),
-    });
+    })
   }
 
   async create(newLawsuit: NewLawsuit) {
     const [createdLawsuit] = await this.db
       .insert(lawsuit)
       .values(newLawsuit)
-      .returning();
+      .returning()
 
-    return createdLawsuit;
+    return createdLawsuit
   }
 
   async update(id: string, updateLawsuit: UpdateLawsuit) {
@@ -79,8 +81,8 @@ export class LawsuitService {
       .update(lawsuit)
       .set(updateLawsuit)
       .where(eq(lawsuit.id, id))
-      .returning();
+      .returning()
 
-    return updatedLawsuit;
+    return updatedLawsuit
   }
 }

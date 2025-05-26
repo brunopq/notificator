@@ -1,10 +1,12 @@
 import { Router } from "express"
 
-import DependencyManager from "@/dependencyManager"
+import { MovimentationController } from "@/controllers/MovimentationController"
+
+import dependencyManager from "@/dependencyManager"
 
 const movimentationRouter = Router()
 
-const movimentationController = DependencyManager.getMovimentationController()
+const movimentationController = dependencyManager.get(MovimentationController)
 
 movimentationRouter.get("/", movimentationController.index)
 movimentationRouter.get("/:id", movimentationController.show)

@@ -1,19 +1,25 @@
 import { isBefore } from "date-fns"
+import { inject, injectable } from "inversify"
 
 import { NotFoundError } from "@/common/errors/HTTPError"
-import type { LawsuitJudiceService } from "@/services/LawsuitJudiceService"
-import type { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
-import type { MovimentationService } from "@/services/MovimentationService"
-import type { NotificationService } from "@/services/NotificationService"
+import { LawsuitJudiceService } from "@/services/LawsuitJudiceService"
+import { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
+import { MovimentationService } from "@/services/MovimentationService"
+import { NotificationService } from "@/services/NotificationService"
 
 /**
  * Searches for the lawsuit with the CNJ, checks if there has been a new movimentation and sends a notification.
  */
+@injectable()
 export class NotifyByLawsuitCNJ {
   constructor(
+    @inject(LawsuitJudiceService)
     private lawsuitJudiceService: LawsuitJudiceService,
+    @inject(MovimentationJudiceService)
     private movimentationJudiceService: MovimentationJudiceService,
+    @inject(MovimentationService)
     private movimentationService: MovimentationService,
+    @inject(NotificationService)
     private notificationService: NotificationService,
   ) {}
 

@@ -1,14 +1,18 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 
-import type { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
-import type { NotificationService } from "@/services/NotificationService"
+import { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
+import { NotificationService } from "@/services/NotificationService"
 import type { Notification } from "@/services/NotificationService"
-import type { PublicationJudiceService } from "@/services/PublicationJudiceService"
+import { PublicationJudiceService } from "@/services/PublicationJudiceService"
 
 export class NotificationFetcherController {
   constructor(
+    @inject(MovimentationJudiceService)
     private movimentationJudiceService: MovimentationJudiceService,
+    @inject(NotificationService)
     private notificationService: NotificationService,
+    @inject(PublicationJudiceService)
     private publicationJudiceService: PublicationJudiceService,
   ) {}
 

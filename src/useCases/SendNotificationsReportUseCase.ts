@@ -1,8 +1,9 @@
 import { endOfDay, startOfDay } from "date-fns"
+import { inject } from "inversify"
 
-import type { EmailService } from "@/services/EmailService"
-import type {
-  ReportTemplateParams,
+import { EmailService } from "@/services/EmailService"
+import {
+  type ReportTemplateParams,
   TemplateService,
 } from "@/services/TemplateService"
 
@@ -19,9 +20,9 @@ import { and, between, eq, not } from "drizzle-orm"
 
 export class SendNotificationsReportUseCase {
   constructor(
-    private readonly db: typeof database,
-    private emailService: EmailService,
-    private templateService: TemplateService,
+    @inject("database") private readonly db: typeof database,
+    @inject(EmailService) private emailService: EmailService,
+    @inject(TemplateService) private templateService: TemplateService,
   ) {}
 
   async execute(date: Date) {

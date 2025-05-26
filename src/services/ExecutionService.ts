@@ -1,6 +1,7 @@
 import { endOfDay, startOfDay } from "date-fns"
 import { and, asc, between, desc, eq, inArray } from "drizzle-orm"
 import { createSelectSchema } from "drizzle-zod"
+import { inject, injectable } from "inversify"
 import type { z } from "zod"
 
 import type { db as database } from "@/database"
@@ -14,8 +15,9 @@ import type { NotificationStatus } from "@/services/NotificationService"
 const executionSchema = createSelectSchema(execution)
 type Execution = z.infer<typeof executionSchema>
 
+@injectable()
 export class ExecutionService {
-  constructor(private readonly db: typeof database) {}
+  constructor(@inject("database") private readonly db: typeof database) {}
 
   async create(): Promise<Execution> {
     const [exec] = await this.db.insert(execution).values({}).returning()

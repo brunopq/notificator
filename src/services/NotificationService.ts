@@ -2,6 +2,7 @@ import { tz } from "@date-fns/tz"
 import { format, isBefore, subWeeks } from "date-fns"
 import { eq } from "drizzle-orm"
 import { createSelectSchema } from "drizzle-zod"
+import { inject, injectable } from "inversify"
 import { z } from "zod"
 
 import type { Paginated, PaginationInput } from "@/common/models/pagination"
@@ -14,14 +15,14 @@ import {
   notificationStatus,
 } from "@/database/schema"
 
-import type { ClientJudiceService } from "./ClientJudiceService"
+import { ClientJudiceService } from "./ClientJudiceService"
 import { selectClientSchema } from "./ClientService"
 import type { IWhatsappService } from "./IWhatsappService"
-import type {
+import {
   MovimentationService,
-  MovimentationWithLawsuitWithClient,
+  type MovimentationWithLawsuitWithClient,
 } from "./MovimentationService"
-import type { SchedulerService } from "./SchedulerService"
+import { SchedulerService } from "./SchedulerService"
 
 const selectNotificationSchema = createSelectSchema(notification)
 const notificationWithClientSchema = selectNotificationSchema.extend({
@@ -125,13 +126,16 @@ Se tiver alguma dúvida, estamos disponíveis para fornecer demais orientações
   }
 }
 
+@injectable()
 export class NotificationService {
   constructor(
-    private db: typeof database,
-    private whatsappService: IWhatsappService,
+    @inject("database") private db: typeof database,
+    @inject("IWhatsappService") private whatsappService: IWhatsappService,
+    @inject(MovimentationService)
     private movimentationService: MovimentationService,
+    @inject(ClientJudiceService)
     private clientJudiceService: ClientJudiceService,
-    private schedulerService: SchedulerService,
+    @inject(SchedulerService) private schedulerService: SchedulerService,
   ) {}
 
   async index(

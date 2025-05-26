@@ -1,10 +1,12 @@
 import { Router } from "express"
 
-import DependencyManager from "@/dependencyManager"
+import { PublicationController } from "@/controllers/PublicationController"
+
+import dependencyManager from "@/dependencyManager"
 
 const publicationRouter = Router()
 
-const publicationController = DependencyManager.getPublicationController()
+const publicationController = dependencyManager.get(PublicationController)
 
 publicationRouter.get("/", publicationController.index)
 publicationRouter.get("/:id", publicationController.show)

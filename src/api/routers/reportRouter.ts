@@ -1,10 +1,12 @@
 import { Router } from "express"
 
-import DependencyManager from "@/dependencyManager"
+import { ReportController } from "@/controllers/ReportController"
+
+import dependencyManager from "@/dependencyManager"
 
 const reportRouter = Router()
 
-const reportController = DependencyManager.getReportController()
+const reportController = dependencyManager.get(ReportController)
 
 reportRouter.get("/notifications", reportController.sendNotificationReport)
 

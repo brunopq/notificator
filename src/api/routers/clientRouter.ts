@@ -1,10 +1,12 @@
 import { Router } from "express"
 
-import DependencyManager from "@/dependencyManager"
+import { ClientController } from "@/controllers/ClientController"
+
+import dependencyManager from "@/dependencyManager"
 
 const clientRouter = Router()
 
-const clientController = DependencyManager.getClientController()
+const clientController = dependencyManager.get(ClientController)
 
 clientRouter.get("/:id", clientController.show)
 

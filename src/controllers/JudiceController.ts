@@ -1,4 +1,5 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 import { z } from "zod"
 
 import {
@@ -6,10 +7,10 @@ import {
   HTTPError,
   InternalServerError,
 } from "@/common/errors/HTTPError"
-import type { JudiceService } from "@/services/JudiceService"
+import { JudiceService } from "@/services/JudiceService"
 
 export class JudiceController {
-  constructor(private judiceService: JudiceService) {}
+  constructor(@inject(JudiceService) private judiceService: JudiceService) {}
 
   logoff: RequestHandler = async (_req, res) => {
     await this.judiceService.logoff()

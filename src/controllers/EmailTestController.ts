@@ -1,9 +1,12 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 
-import type { TemplateService } from "@/services/TemplateService"
+import { TemplateService } from "@/services/TemplateService"
 
 export class EmailTestController {
-  constructor(private templateService: TemplateService) {}
+  constructor(
+    @inject(TemplateService) private templateService: TemplateService,
+  ) {}
 
   show: RequestHandler = async (req, res) => {
     const temp = this.templateService.renderReport({
@@ -11,8 +14,8 @@ export class EmailTestController {
       generatedDatetime: new Date("2025-05-22T10:30:00Z"),
       processedMovimentationCount: 5,
       totalClients: 2,
-      totalSuccessfullClients: 1,
-      totalErrorClients: 1,
+      notificationsSent: 1,
+      notificationsNotSent: 1,
       clients: [
         {
           name: "João da Silva",

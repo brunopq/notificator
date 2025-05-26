@@ -1,15 +1,19 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 
 import { BadRequestError, NotFoundError } from "@/common/errors/HTTPError"
 import { paginationInputSchema } from "@/common/models/pagination"
 
 import {
-  type NotificationService,
+  NotificationService,
   insertNotificationSchema,
 } from "@/services/NotificationService"
 
 export class NotificationController {
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    @inject(NotificationService)
+    private notificationService: NotificationService,
+  ) {}
 
   index: RequestHandler = async (req, res) => {
     const pagination = paginationInputSchema.parse(req.query)

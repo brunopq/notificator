@@ -1,9 +1,12 @@
 import { Router } from "express"
-import DependencyManager from "@/dependencyManager"
+
+import { AgendaController } from "@/controllers/AgendaController"
+
+import dependencyManager from "@/dependencyManager"
 
 const agendaRouter = Router()
 
-const agendaController = DependencyManager.getAgendaController()
+const agendaController = dependencyManager.get(AgendaController)
 
 agendaRouter.get(
   "/handleNotificationAppointments",

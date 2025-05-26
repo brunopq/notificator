@@ -1,13 +1,18 @@
-import type { ClientJudiceService } from "./ClientJudiceService"
-import type { JudiceService } from "./JudiceService"
-import type { LawsuitService } from "./LawsuitService"
-import type { MovimentationService } from "./MovimentationService"
+import { inject, injectable } from "inversify"
 
+import { ClientJudiceService } from "./ClientJudiceService"
+import { JudiceService } from "./JudiceService"
+import { LawsuitService } from "./LawsuitService"
+import { MovimentationService } from "./MovimentationService"
+
+@injectable()
 export class LawsuitJudiceService {
   constructor(
-    private lawsuitService: LawsuitService,
-    private judiceService: JudiceService,
+    @inject(LawsuitService) private lawsuitService: LawsuitService,
+    @inject(JudiceService) private judiceService: JudiceService,
+    @inject(ClientJudiceService)
     private clientJudiceService: ClientJudiceService,
+    @inject(MovimentationService)
     private movimentationService: MovimentationService,
   ) {}
 

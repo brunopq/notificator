@@ -1,11 +1,14 @@
 import { Router } from "express"
 
-import DependencyManager from "@/dependencyManager"
+import { NotificationFetcherController } from "@/controllers/NotificationFetcherController"
+
+import dependencyManager from "@/dependencyManager"
 
 const notificationFetcherRouter = Router()
 
-const notificationFetcherController =
-  DependencyManager.getNotificationFetcherController()
+const notificationFetcherController = dependencyManager.get(
+  NotificationFetcherController,
+)
 
 notificationFetcherRouter.post(
   "/fetchAndSend",

@@ -3,9 +3,11 @@ import {
   SchedulerClient,
 } from "@aws-sdk/client-scheduler"
 import { format } from "date-fns"
+import { injectable } from "inversify"
 
 import { env } from "@/common/utils/envConfig"
 
+@injectable()
 export class SchedulerService {
   async scheduleNotificationSending(timestamp: Date, notificationId: string) {
     const schedulerClient = new SchedulerClient({

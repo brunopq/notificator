@@ -1,17 +1,20 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 
 import { BadRequestError } from "@/common/errors/HTTPError"
 import { paginationInputSchema } from "@/common/models/pagination"
 
-import type { PublicationJudiceService } from "@/services/PublicationJudiceService"
+import { PublicationJudiceService } from "@/services/PublicationJudiceService"
 import {
-  type PublicationsService,
+  PublicationsService,
   insertPublicationSchema,
 } from "@/services/PublicationsService"
 
 export class PublicationController {
   constructor(
+    @inject(PublicationsService)
     private publicationsService: PublicationsService,
+    @inject(PublicationJudiceService)
     private publicationJudiceService: PublicationJudiceService,
   ) {}
 

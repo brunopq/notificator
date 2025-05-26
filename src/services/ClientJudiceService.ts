@@ -1,10 +1,13 @@
-import type { ClientService } from "./ClientService"
-import type { JudiceService } from "./JudiceService"
+import { inject, injectable } from "inversify"
 
+import { ClientService } from "./ClientService"
+import { JudiceService } from "./JudiceService"
+
+@injectable()
 export class ClientJudiceService {
   constructor(
-    private clientService: ClientService,
-    private judiceService: JudiceService,
+    @inject(ClientService) private readonly clientService: ClientService,
+    @inject(JudiceService) private readonly judiceService: JudiceService,
   ) {}
 
   async syncClientWithJudice(judiceId: number) {

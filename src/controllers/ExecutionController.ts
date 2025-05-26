@@ -1,7 +1,8 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 import { z } from "zod"
 
-import type { ExecutionService } from "@/services/ExecutionService"
+import { ExecutionService } from "@/services/ExecutionService"
 import { notificationStatusSchema } from "@/services/NotificationService"
 
 const indexQuerySchema = z.object({
@@ -10,7 +11,9 @@ const indexQuerySchema = z.object({
 })
 
 export class ExecutionController {
-  constructor(private executionService: ExecutionService) {}
+  constructor(
+    @inject(ExecutionService) private executionService: ExecutionService,
+  ) {}
 
   index: RequestHandler = async (req, res) => {
     const rawDay = req.query.day

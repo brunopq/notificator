@@ -1,18 +1,24 @@
 import { isAfter } from "date-fns"
-import type { JudiceService } from "./JudiceService"
+import { inject, injectable } from "inversify"
+
+import { JudiceService } from "./JudiceService"
 import type { Lawsuit } from "./LawsuitService"
-import type {
-  Movimentation,
+import {
+  type Movimentation,
   MovimentationService,
 } from "./MovimentationService"
-import type { PublicationJudiceService } from "./PublicationJudiceService"
-import type { PublicationsService } from "./PublicationsService"
+import { PublicationJudiceService } from "./PublicationJudiceService"
+import { PublicationsService } from "./PublicationsService"
 
+@injectable()
 export class MovimentationJudiceService {
   constructor(
+    @inject(MovimentationService)
     private movimentationService: MovimentationService,
-    private judiceService: JudiceService,
+    @inject(JudiceService) private judiceService: JudiceService,
+    @inject(PublicationsService)
     private publicationsService: PublicationsService,
+    @inject(PublicationJudiceService)
     private publicationJudiceService: PublicationJudiceService,
   ) {}
 

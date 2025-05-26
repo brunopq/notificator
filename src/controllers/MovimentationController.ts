@@ -1,17 +1,20 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 
 import { BadRequestError } from "@/common/errors/HTTPError"
 
 import { paginationInputSchema } from "@/common/models/pagination"
-import type { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
+import { MovimentationJudiceService } from "@/services/MovimentationJudiceService"
 import {
-  type MovimentationService,
+  MovimentationService,
   insertMovimentationSchema,
 } from "@/services/MovimentationService"
 
 export class MovimentationController {
   constructor(
+    @inject(MovimentationService)
     private movimentationService: MovimentationService,
+    @inject(MovimentationJudiceService)
     private movimentationJudiceService: MovimentationJudiceService,
   ) {}
 

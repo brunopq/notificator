@@ -1,10 +1,12 @@
 import { Router } from "express"
 
-import DependencyManager from "@/dependencyManager"
+import { LawsuitController } from "@/controllers/LawsuitController"
+
+import dependencyManager from "@/dependencyManager"
 
 const lawsuitRouter = Router()
 
-const lawsuitController = DependencyManager.getLawsuitController()
+const lawsuitController = dependencyManager.get(LawsuitController)
 
 lawsuitRouter.get("/", lawsuitController.index)
 lawsuitRouter.get("/:id", lawsuitController.show)

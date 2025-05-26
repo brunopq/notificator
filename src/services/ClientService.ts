@@ -1,4 +1,5 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import { inject, injectable } from "inversify"
 import { z } from "zod"
 
 import type { db as database } from "@/database"
@@ -19,8 +20,9 @@ export type Client = z.infer<typeof selectClientSchema>
 type NewClient = z.infer<typeof insertClientSchema>
 type UpdateClient = z.infer<typeof updateClientSchema>
 
+@injectable()
 export class ClientService {
-  constructor(private db: typeof database) {}
+  constructor(@inject("database") private db: typeof database) {}
 
   async getById(id: string) {
     const dbClient = await this.db.query.client.findFirst({

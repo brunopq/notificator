@@ -1,11 +1,12 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 
 import { BadRequestError, NotFoundError } from "@/common/errors/HTTPError"
 
-import type { ClientService } from "@/services/ClientService"
+import { ClientService } from "@/services/ClientService"
 
 export class ClientController {
-  constructor(private clientService: ClientService) {}
+  constructor(@inject(ClientService) private clientService: ClientService) {}
 
   show: RequestHandler = async (req, res) => {
     const id = req.params.id

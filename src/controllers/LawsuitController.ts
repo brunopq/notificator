@@ -1,18 +1,17 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 
 import { BadRequestError, NotFoundError } from "@/common/errors/HTTPError"
 
 import { paginationInputSchema } from "@/common/models/pagination"
 
-import type { LawsuitJudiceService } from "@/services/LawsuitJudiceService"
-import {
-  type LawsuitService,
-  insertLawsuitSchema,
-} from "@/services/LawsuitService"
+import { LawsuitJudiceService } from "@/services/LawsuitJudiceService"
+import { LawsuitService, insertLawsuitSchema } from "@/services/LawsuitService"
 
 export class LawsuitController {
   constructor(
-    private lawsuitService: LawsuitService,
+    @inject(LawsuitService) private lawsuitService: LawsuitService,
+    @inject(LawsuitJudiceService)
     private lawsuitJudiceService: LawsuitJudiceService,
   ) {}
 

@@ -1,9 +1,11 @@
 import type { RequestHandler } from "express"
+import { inject } from "inversify"
 
-import type { SendNotificationsReportUseCase } from "@/useCases/SendNotificationsReportUseCase"
+import { SendNotificationsReportUseCase } from "@/useCases/SendNotificationsReportUseCase"
 
 export class ReportController {
   constructor(
+    @inject(SendNotificationsReportUseCase)
     private sendNotificationsReportUseCase: SendNotificationsReportUseCase,
   ) {}
 

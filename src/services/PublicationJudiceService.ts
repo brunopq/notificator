@@ -1,13 +1,17 @@
 import { parse } from "date-fns"
+import { inject, injectable } from "inversify"
 
-import type { JudiceService } from "./JudiceService"
-import type { LawsuitJudiceService } from "./LawsuitJudiceService"
-import type { Publication, PublicationsService } from "./PublicationsService"
+import { JudiceService } from "./JudiceService"
+import { LawsuitJudiceService } from "./LawsuitJudiceService"
+import { type Publication, PublicationsService } from "./PublicationsService"
 
+@injectable()
 export class PublicationJudiceService {
   constructor(
-    private judiceService: JudiceService,
+    @inject(JudiceService) private judiceService: JudiceService,
+    @inject(PublicationsService)
     private publicationService: PublicationsService,
+    @inject(LawsuitJudiceService)
     private lawsuitJudiceService: LawsuitJudiceService,
   ) {}
 

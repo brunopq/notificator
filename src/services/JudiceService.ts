@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs"
 import { type ParsedUrlQueryInput, stringify } from "node:querystring"
 import { TZDate } from "@date-fns/tz"
 import axios, { AxiosError, type AxiosInstance } from "axios"
@@ -7,6 +6,7 @@ import * as cheerio from "cheerio"
 import { parse as parseCSV } from "csv"
 import { parse } from "date-fns"
 import { ptBR } from "date-fns/locale/pt-BR"
+import { inject, injectable } from "inversify"
 import { CookieJar } from "tough-cookie"
 import { z } from "zod"
 
@@ -48,6 +48,10 @@ export async function createJudiceApiClient() {
   console.log("Connected to Judice API")
   return client
 }
+
+// container.register("createJudiceApiClient", {
+//   useValue: createJudiceApiClient,
+// })
 
 const processSchema = z.object({
   f_id: z.coerce.number(),
@@ -188,9 +192,13 @@ type RequestOptions = {
   body?: ParsedUrlQueryInput | FormData
 }
 
+@injectable()
 export class JudiceService {
   private httpClient: AxiosInstance | null = null
-  constructor(private createHttpClient: () => Promise<AxiosInstance>) {}
+  constructor(
+    @inject("createJudiceApiClient")
+    private createHttpClient: typeof createJudiceApiClient,
+  ) {}
 
   private async extractAudiencias(data: string) {
     const $ = cheerio.load(data)

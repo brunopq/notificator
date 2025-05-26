@@ -1,13 +1,17 @@
 import type { RequestHandler } from "express"
+import { inject, injectable } from "inversify"
 
-import type { ExecutionService } from "@/services/ExecutionService"
-import type { JudiceService } from "@/services/JudiceService"
-import type { NotifyByLawsuitCNJ } from "@/useCases/NotifyByLawsuitCNJ"
+import { ExecutionService } from "@/services/ExecutionService"
+import { JudiceService } from "@/services/JudiceService"
+import { NotifyByLawsuitCNJ } from "@/useCases/NotifyByLawsuitCNJ"
 
+@injectable()
 export class AgendaController {
   constructor(
-    private readonly judiceService: JudiceService,
+    @inject(JudiceService) private readonly judiceService: JudiceService,
+    @inject(NotifyByLawsuitCNJ)
     private readonly notifyByLawsuitCNJ: NotifyByLawsuitCNJ,
+    @inject(ExecutionService)
     private readonly executionService: ExecutionService,
   ) {}
 
