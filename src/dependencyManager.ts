@@ -111,8 +111,8 @@ class DependencyManager {
 
     this.notificationService = new NotificationService(
       this.db,
-      // this.evolutionAPIService,
-      this.uzApiService,
+      this.evolutionAPIService,
+      // this.uzApiService,
       this.movimentationService,
       this.clientJudiceService,
       this.schedulerService,
