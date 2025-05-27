@@ -135,23 +135,23 @@ export class TemplateService {
       )
   }
 
-  renderReport(params: ReportTemplateParams) {
+  renderReport = (params: ReportTemplateParams) => {
     return this.reportTemplate(params)
   }
 
-  renderAudiencia(params: AudienciaTemplateParams) {
+  renderAudiencia = (params: AudienciaTemplateParams) => {
     return this.audienciaTemplate(params)
   }
 
-  renderPericia(params: PericiaTemplateParams) {
+  renderPericia = (params: PericiaTemplateParams) => {
     return this.periciaTemplate(params)
   }
 
-  renderAudienciaReminder(params: AudienciaReminderTemplateParams) {
+  renderAudienciaReminder = (params: AudienciaReminderTemplateParams) => {
     return this.audienciaReminderTemplate(params)
   }
 
-  renderPericiaReminder(params: PericiaReminderTemplateParams) {
+  renderPericiaReminder = (params: PericiaReminderTemplateParams) => {
     return this.periciaReminderTemplate(params)
   }
 }

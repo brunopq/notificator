@@ -18,6 +18,12 @@ import { MovimentationService } from "./MovimentationService"
 import { SchedulerService } from "./SchedulerService"
 import { TemplateService } from "./TemplateService"
 
+function formatName(name: string): string {
+  const firstName = name.split(" ")[0]
+
+  return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
+}
+
 @injectable()
 export class NotificationService {
   constructor(
@@ -108,7 +114,7 @@ export class NotificationService {
         : this.templateService.renderPericia
 
     const message = renderer({
-      clientName: fullMovimentation.lawsuit.client.name,
+      clientName: formatName(fullMovimentation.lawsuit.client.name),
       CNJ: fullMovimentation.lawsuit.cnj,
       date: fullMovimentation.finalDate,
     })
@@ -149,7 +155,7 @@ export class NotificationService {
         : this.templateService.renderPericiaReminder
 
     const message = renderer({
-      clientName: fullMovimentation.lawsuit.client.name,
+      clientName: formatName(fullMovimentation.lawsuit.client.name),
       CNJ: fullMovimentation.lawsuit.cnj,
       date: fullMovimentation.finalDate,
       weeks: 2,
