@@ -6,16 +6,16 @@ import handlebars, { type TemplateDelegate } from "handlebars"
 import { injectable } from "inversify"
 import { z } from "zod"
 
+import {
+  type NotificationError,
+  notificationErrorsSchema,
+} from "@/models/Notification"
+
 import reportTemplatePath from "@/templates/email/reportTemplate.hbs"
 import audienciaTemplatePath from "@/templates/notifications/audiencia.hbs"
 import periciaTemplatePath from "@/templates/notifications/pericia.hbs"
 import audienciaReminderTemplatePath from "@/templates/notifications/reminder/audiencia.hbs"
 import periciaReminderTemplatePath from "@/templates/notifications/reminder/pericia.hbs"
-
-import {
-  type NotificationError,
-  notificationErrorsSchema,
-} from "./NotificationService"
 
 // Types and schemas
 

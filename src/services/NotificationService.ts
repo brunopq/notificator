@@ -1,54 +1,22 @@
-import { tz } from "@date-fns/tz"
-import { format, isBefore, subWeeks } from "date-fns"
+import { isBefore, subWeeks } from "date-fns"
 import { eq } from "drizzle-orm"
-import { createSelectSchema } from "drizzle-zod"
 import { inject, injectable } from "inversify"
-import { z } from "zod"
 
 import type { Paginated, PaginationInput } from "@/common/models/pagination"
 
 import type { db as database } from "@/database"
-import {
-  notification,
-  notificationErrors,
-  notificationSnapshot,
-  notificationStatus,
-} from "@/database/schema"
+import { notification, notificationSnapshot } from "@/database/schema"
 
+import type {
+  NewNotification,
+  Notification,
+  notificationWithClientSchema,
+} from "@/models/Notification"
 import { ClientJudiceService } from "./ClientJudiceService"
-import { selectClientSchema } from "./ClientService"
 import type { IWhatsappService } from "./IWhatsappService"
-import {
-  MovimentationService,
-  type MovimentationWithLawsuitWithClient,
-} from "./MovimentationService"
+import { MovimentationService } from "./MovimentationService"
 import { SchedulerService } from "./SchedulerService"
 import { TemplateService } from "./TemplateService"
-
-const selectNotificationSchema = createSelectSchema(notification)
-const notificationWithClientSchema = selectNotificationSchema.extend({
-  client: selectClientSchema,
-})
-export const notificationErrorsSchema = z.enum(notificationErrors.enumValues)
-export const notificationStatusSchema = z.enum(notificationStatus.enumValues)
-
-export type NotificationStatus = z.infer<typeof notificationStatusSchema>
-
-export const insertNotificationSchema = z.object({
-  movimentationId: z.string(),
-  clientId: z.string(),
-  message: z.string(),
-  sentAt: z.date().nullish(),
-  recieved: z.boolean().default(false),
-  scheduleArn: z.string().nullish(),
-  status: notificationStatusSchema,
-  error: notificationErrorsSchema.nullish(),
-})
-
-export type Notification = z.infer<typeof selectNotificationSchema>
-type NewNotification = z.infer<typeof insertNotificationSchema>
-
-export type NotificationError = z.infer<typeof notificationErrorsSchema>
 
 @injectable()
 export class NotificationService {

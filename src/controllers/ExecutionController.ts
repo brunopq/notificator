@@ -2,8 +2,8 @@ import type { RequestHandler } from "express"
 import { inject } from "inversify"
 import { z } from "zod"
 
+import { notificationStatusSchema } from "@/models/Notification"
 import { ExecutionService } from "@/services/ExecutionService"
-import { notificationStatusSchema } from "@/services/NotificationService"
 
 const indexQuerySchema = z.object({
   day: z.date({ coerce: true }),

@@ -4,10 +4,8 @@ import { inject } from "inversify"
 import { BadRequestError, NotFoundError } from "@/common/errors/HTTPError"
 import { paginationInputSchema } from "@/common/models/pagination"
 
-import {
-  NotificationService,
-  insertNotificationSchema,
-} from "@/services/NotificationService"
+import { insertNotificationSchema } from "@/models/Notification"
+import { NotificationService } from "@/services/NotificationService"
 
 export class NotificationController {
   constructor(
