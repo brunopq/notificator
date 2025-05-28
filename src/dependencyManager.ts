@@ -4,7 +4,7 @@ import { db } from "./database"
 import { EvolutionAPIService } from "./services/EvolutionAPIService"
 import { createJudiceApiClient } from "./services/JudiceService"
 
-const container = new Container({ autobind: true })
+const container = new Container({ autobind: true, defaultScope: "Singleton" })
 
 container.bind("database").toConstantValue(db)
 container.bind("createJudiceApiClient").toConstantValue(createJudiceApiClient)
