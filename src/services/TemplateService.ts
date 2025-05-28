@@ -11,11 +11,11 @@ import {
   notificationErrorsSchema,
 } from "@/models/Notification"
 
-import reportTemplatePath from "@/templates/email/reportTemplate.hbs"
-import audienciaTemplatePath from "@/templates/notifications/audiencia.hbs"
-import periciaTemplatePath from "@/templates/notifications/pericia.hbs"
-import audienciaReminderTemplatePath from "@/templates/notifications/reminder/audiencia.hbs"
-import periciaReminderTemplatePath from "@/templates/notifications/reminder/pericia.hbs"
+import reportTemplate from "@/templates/email/reportTemplate.hbs"
+import audienciaTemplate from "@/templates/notifications/audiencia.hbs"
+import periciaTemplate from "@/templates/notifications/pericia.hbs"
+import audienciaReminderTemplate from "@/templates/notifications/reminder/audiencia.hbs"
+import periciaReminderTemplate from "@/templates/notifications/reminder/pericia.hbs"
 
 // Types and schemas
 
@@ -112,27 +112,22 @@ export class TemplateService {
   private periciaReminderTemplate: TemplateDelegate<PericiaReminderTemplateParams>
 
   constructor() {
-    this.reportTemplate = handlebars.compile<ReportTemplateParams>(
-      readFileSync(reportTemplatePath, "utf-8"),
-    )
+    this.reportTemplate =
+      handlebars.compile<ReportTemplateParams>(reportTemplate)
 
-    this.audienciaTemplate = handlebars.compile<AudienciaTemplateParams>(
-      readFileSync(audienciaTemplatePath, "utf-8"),
-    )
+    this.audienciaTemplate =
+      handlebars.compile<AudienciaTemplateParams>(audienciaTemplate)
 
-    this.periciaTemplate = handlebars.compile<PericiaTemplateParams>(
-      readFileSync(periciaTemplatePath, "utf-8"),
-    )
+    this.periciaTemplate =
+      handlebars.compile<PericiaTemplateParams>(periciaTemplate)
 
     this.audienciaReminderTemplate =
       handlebars.compile<AudienciaReminderTemplateParams>(
-        readFileSync(audienciaReminderTemplatePath, "utf-8"),
+        audienciaReminderTemplate,
       )
 
     this.periciaReminderTemplate =
-      handlebars.compile<PericiaReminderTemplateParams>(
-        readFileSync(periciaReminderTemplatePath, "utf-8"),
-      )
+      handlebars.compile<PericiaReminderTemplateParams>(periciaReminderTemplate)
   }
 
   renderReport = (params: ReportTemplateParams) => {

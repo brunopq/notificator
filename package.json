@@ -5,9 +5,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --bun --watch src/index.ts",
+    "dev": "node --import tsx --loader ./src/loaders/hbs.ts --env-file .env --watch src/index.ts",
     "build": "bun --bun build.ts",
-    "start": "cd dist && node index.js",
+    "start": "cd dist && node --loader ./loaders/hbs.js index.js",
     "generate": "drizzle-kit generate",
     "lint": "biome check src/",
     "lint:fix": "biome check src/ --fix",
@@ -18,6 +18,7 @@
     "@aws-sdk/client-scheduler": "^3.699.0",
     "@aws-sdk/client-ses": "^3.812.0",
     "@date-fns/tz": "^1.2.0",
+    "@types/node": "^22.15.23",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.7.8",
     "axios-cookiejar-support": "^5.0.3",
@@ -38,6 +39,7 @@
     "reflect-metadata": "^0.2.2",
     "tough-cookie": "^5.0.0",
     "ts-jest": "^29.2.5",
+    "tsx": "^4.19.4",
     "zod": "^3.22.4"
   },
   "devDependencies": {
