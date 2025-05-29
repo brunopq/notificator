@@ -1,0 +1,1 @@
+ALTER TABLE "movimentations" ADD COLUMN "link" text;

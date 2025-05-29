@@ -115,6 +115,7 @@ export const movimentation = pgTable("movimentations", {
     withTimezone: true,
     mode: "date",
   }).notNull(),
+  link: text(),
   finalDate: timestamp({ withTimezone: true, mode: "date" }).notNull(),
   isActive: boolean().default(true),
 })

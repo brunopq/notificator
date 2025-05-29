@@ -108,16 +108,32 @@ export class NotificationService {
       throw new Error("Movimentation not found")
     }
 
-    const renderer =
-      fullMovimentation.type === "AUDIENCIA"
-        ? this.templateService.renderAudiencia
-        : this.templateService.renderPericia
+    // TODO: make this into a factory or something
+    let message: string
+    if (fullMovimentation.link) {
+      const renderer =
+        fullMovimentation.type === "AUDIENCIA"
+          ? this.templateService.renderRemoteAudiencia
+          : this.templateService.renderRemotePericia
 
-    const message = renderer({
-      clientName: formatName(fullMovimentation.lawsuit.client.name),
-      CNJ: fullMovimentation.lawsuit.cnj,
-      date: fullMovimentation.finalDate,
-    })
+      message = renderer({
+        clientName: formatName(fullMovimentation.lawsuit.client.name),
+        CNJ: fullMovimentation.lawsuit.cnj,
+        date: fullMovimentation.finalDate,
+        link: fullMovimentation.link,
+      })
+    } else {
+      const renderer =
+        fullMovimentation.type === "AUDIENCIA"
+          ? this.templateService.renderAudiencia
+          : this.templateService.renderPericia
+
+      message = renderer({
+        clientName: formatName(fullMovimentation.lawsuit.client.name),
+        CNJ: fullMovimentation.lawsuit.cnj,
+        date: fullMovimentation.finalDate,
+      })
+    }
 
     const notification = await this.create({
       movimentationId: fullMovimentation.id,
