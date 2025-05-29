@@ -167,6 +167,15 @@ export class JudiceService {
     const arr = res
       .map((i, el) =>
         $(el).extract({
+          link: {
+            selector: "div.details a",
+            value: (el) => {
+              const href = $(el).attr("href")
+              if (!href) return null
+
+              return href
+            },
+          },
           isActive: {
             selector: "div.calendar",
             value: (el) => $(el).hasClass("green"),
