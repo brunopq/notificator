@@ -4,6 +4,9 @@ const res = await Bun.build({
   entrypoints: ["src/index.ts"],
   target: "node",
   outdir: "dist",
+  loader: {
+    ".hbs": "text",
+  },
 })
 
 if (res.success) {

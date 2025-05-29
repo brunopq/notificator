@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --import tsx --loader ./src/loaders/hbs.ts --env-file .env --watch src/index.ts",
     "build": "bun --bun build.ts",
-    "start": "cd dist && node --loader ./loaders/hbs.js index.js",
+    "start": "cd dist && node index.js",
     "generate": "drizzle-kit generate",
     "lint": "biome check src/",
     "lint:fix": "biome check src/ --fix",
