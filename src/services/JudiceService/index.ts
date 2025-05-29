@@ -1,57 +1,16 @@
 import { type ParsedUrlQueryInput, stringify } from "node:querystring"
 import { TZDate } from "@date-fns/tz"
-import axios, { AxiosError, type AxiosInstance } from "axios"
-import { wrapper } from "axios-cookiejar-support"
+import { AxiosError, type AxiosInstance } from "axios"
 import * as cheerio from "cheerio"
 import { parse as parseCSV } from "csv"
 import { parse } from "date-fns"
 import { ptBR } from "date-fns/locale/pt-BR"
 import { inject, injectable } from "inversify"
-import { CookieJar } from "tough-cookie"
 import { z } from "zod"
 
 import { InternalServerError, NotFoundError } from "@/common/errors/HTTPError"
-import { env } from "@/common/utils/envConfig"
 
-export async function createJudiceApiClient() {
-  console.log("Establishing connection to Judice API")
-  const jar = new CookieJar()
-  const client = wrapper(axios.create({ jar }))
-
-  await client.get("https://managerapia.officeadv.com.br/csrf-token")
-
-  const xsrfTokenCookie = (
-    await jar.getCookies("https://managerapia.officeadv.com.br")
-  ).find((cookie) => cookie.key === "XSRF-TOKEN")
-
-  if (!xsrfTokenCookie) {
-    throw new Error("XSRF cookie not found in axios instance")
-  }
-  // biome-ignore lint/style/useTemplate: this is cleaner
-  const xsrfToken = xsrfTokenCookie.value.replace("%3D", "") + "="
-
-  client.defaults.headers.common["X-XSRF-TOKEN"] = xsrfToken
-
-  await client.post("https://managerapia.officeadv.com.br/login", {
-    user: env.JUDICE_USER,
-    password: env.JUDICE_PASS,
-    tenant: env.JUDICE_TENANT,
-  })
-
-  const acessoResponse = await client.get(
-    "https://managerapia.officeadv.com.br/office/login/gerar-acesso",
-  )
-
-  // make request for the php session token
-  await client.get(acessoResponse.data.retorno.url)
-
-  console.log("Connected to Judice API")
-  return client
-}
-
-// container.register("createJudiceApiClient", {
-//   useValue: createJudiceApiClient,
-// })
+import type { createJudiceApiClient } from "./apiClient"
 
 const processSchema = z.object({
   f_id: z.coerce.number(),
@@ -390,7 +349,7 @@ export class JudiceService {
           }
 
           console.log("Failed to make request to Judice API, retrying")
-          this.httpClient = await createJudiceApiClient()
+          this.httpClient = await this.createHttpClient()
 
           return this.makeRequest(path, options, false)
         }

@@ -2,7 +2,7 @@ import { Container } from "inversify"
 
 import { db } from "./database"
 import { EvolutionAPIService } from "./services/EvolutionAPIService"
-import { createJudiceApiClient } from "./services/JudiceService"
+import { createJudiceApiClient } from "./services/JudiceService/apiClient"
 
 const container = new Container({ autobind: true, defaultScope: "Singleton" })
 
