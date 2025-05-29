@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs"
-
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale/pt-BR"
 import handlebars, { type TemplateDelegate } from "handlebars"
@@ -16,6 +14,8 @@ import audienciaTemplate from "@/templates/notifications/audiencia.hbs"
 import periciaTemplate from "@/templates/notifications/pericia.hbs"
 import audienciaReminderTemplate from "@/templates/notifications/reminder/audiencia.hbs"
 import periciaReminderTemplate from "@/templates/notifications/reminder/pericia.hbs"
+import remoteAudienciaTemplate from "@/templates/notifications/remote/audiencia.hbs"
+import remotePericiaTemplate from "@/templates/notifications/remote/pericia.hbs"
 
 // Types and schemas
 
@@ -78,6 +78,26 @@ export type PericiaReminderTemplateParams = z.infer<
   typeof periciaReminderTemplateParams
 >
 
+const remoteAudienciaTemplateParams = z.object({
+  clientName: z.string(),
+  CNJ: z.string(),
+  date: z.date(),
+  link: z.string(),
+})
+export type RemoteAudienciaTemplateParams = z.infer<
+  typeof remoteAudienciaTemplateParams
+>
+
+const remotePericiaTemplateParams = z.object({
+  clientName: z.string(),
+  CNJ: z.string(),
+  date: z.date(),
+  link: z.string(),
+})
+export type RemotePericiaTemplateParams = z.infer<
+  typeof remotePericiaTemplateParams
+>
+
 // Helpers
 
 const notificationErrorMessages: Record<NotificationError, string> = {
@@ -110,6 +130,8 @@ export class TemplateService {
   private periciaTemplate: TemplateDelegate<PericiaTemplateParams>
   private audienciaReminderTemplate: TemplateDelegate<AudienciaReminderTemplateParams>
   private periciaReminderTemplate: TemplateDelegate<PericiaReminderTemplateParams>
+  private remoteAudienciaTemplate: TemplateDelegate<RemoteAudienciaTemplateParams>
+  private remotePericiaTemplate: TemplateDelegate<RemotePericiaTemplateParams>
 
   constructor() {
     this.reportTemplate =
@@ -128,25 +150,39 @@ export class TemplateService {
 
     this.periciaReminderTemplate =
       handlebars.compile<PericiaReminderTemplateParams>(periciaReminderTemplate)
+
+    this.remoteAudienciaTemplate =
+      handlebars.compile<RemoteAudienciaTemplateParams>(remoteAudienciaTemplate)
+
+    this.remotePericiaTemplate =
+      handlebars.compile<RemotePericiaTemplateParams>(remotePericiaTemplate)
   }
 
-  renderReport = (params: ReportTemplateParams) => {
+  renderReport(params: ReportTemplateParams) {
     return this.reportTemplate(params)
   }
 
-  renderAudiencia = (params: AudienciaTemplateParams) => {
+  renderAudiencia(params: AudienciaTemplateParams) {
     return this.audienciaTemplate(params)
   }
 
-  renderPericia = (params: PericiaTemplateParams) => {
+  renderPericia(params: PericiaTemplateParams) {
     return this.periciaTemplate(params)
   }
 
-  renderAudienciaReminder = (params: AudienciaReminderTemplateParams) => {
+  renderAudienciaReminder(params: AudienciaReminderTemplateParams) {
     return this.audienciaReminderTemplate(params)
   }
 
-  renderPericiaReminder = (params: PericiaReminderTemplateParams) => {
+  renderPericiaReminder(params: PericiaReminderTemplateParams) {
     return this.periciaReminderTemplate(params)
+  }
+
+  renderRemoteAudiencia(params: RemoteAudienciaTemplateParams) {
+    return this.remoteAudienciaTemplate(params)
+  }
+
+  renderRemotePericia(params: RemotePericiaTemplateParams) {
+    return this.remotePericiaTemplate(params)
   }
 }
