@@ -1,3 +1,4 @@
+import { tz } from "@date-fns/tz"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale/pt-BR"
 import handlebars, { type TemplateDelegate } from "handlebars"
@@ -113,13 +114,16 @@ handlebars.registerHelper(
     errorCode === undefined ? "-" : notificationErrorMessages[errorCode],
 )
 handlebars.registerHelper("formatDate", (date: Date) =>
-  format(date, "dd/MM/yyyy", { locale: ptBR }),
+  format(date, "dd/MM/yyyy", { locale: ptBR, in: tz("America/Sao_Paulo") }),
 )
 handlebars.registerHelper("formatTime", (date: Date) =>
-  format(date, "HH:mm", { locale: ptBR }),
+  format(date, "HH:mm", { locale: ptBR, in: tz("America/Sao_Paulo") }),
 )
 handlebars.registerHelper("formatDateTime", (date: Date) =>
-  format(date, "dd/MM/yyyy HH:mm:ss", { locale: ptBR }),
+  format(date, "dd/MM/yyyy HH:mm:ss", {
+    locale: ptBR,
+    in: tz("America/Sao_Paulo"),
+  }),
 )
 
 // service
