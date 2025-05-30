@@ -58,6 +58,7 @@ export class MovimentationJudiceService {
               finalDate: movimentation.date,
               lawsuitId: lawsuit.id,
               isActive: movimentation.isActive,
+              link: movimentation.link,
             })
           return newMovimentation
         }
@@ -123,6 +124,7 @@ export class MovimentationJudiceService {
             finalDate: createdAudiencia.date,
             lawsuitId: p.lawsuitId,
             isActive: createdAudiencia.isActive,
+            link: createdAudiencia.link,
           })
 
         // sets the movimentation id
