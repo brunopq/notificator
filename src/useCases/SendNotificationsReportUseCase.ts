@@ -123,7 +123,6 @@ export class SendNotificationsReportUseCase {
       subject: "Relatório de notificações",
       cc: [
         "analucia@ibotiadvogados.com.br",
-        "anderson@ibotiadvogados.com.br",
         "adriano@ibotiadvogados.com.br",
         "bruno@ibotiadvogados.com.br",
         "rafaelvieira@ibotiadvogados.com.br",
