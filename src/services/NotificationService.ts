@@ -108,6 +108,13 @@ export class NotificationService {
       throw new Error("Movimentation not found")
     }
 
+    if (fullMovimentation.variant === "conciliacao") {
+      console.log(
+        `Movimentation ${movimentationId} is of type "conciliacao", skipping notification creation`,
+      )
+      return null
+    }
+
     // TODO: make this into a factory or something
     let message: string
     if (fullMovimentation.link) {
@@ -153,6 +160,13 @@ export class NotificationService {
     if (!fullMovimentation) {
       console.log(`Movimentation ${movimentationId} not found`)
       throw new Error("Movimentation not found")
+    }
+
+    if (fullMovimentation.variant === "conciliacao") {
+      console.log(
+        `Movimentation ${movimentationId} is of type "conciliacao", skipping notification creation`,
+      )
+      return null
     }
 
     const notificationScheduledDate = subWeeks(

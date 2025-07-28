@@ -54,6 +54,7 @@ export class MovimentationJudiceService {
               judiceId: movimentation.judiceId,
               type:
                 movimentation.type === "audiencia" ? "AUDIENCIA" : "PERICIA",
+              variant: movimentation.variant,
               expeditionDate: movimentation.lastModification,
               finalDate: movimentation.date,
               lawsuitId: lawsuit.id,
@@ -120,6 +121,7 @@ export class MovimentationJudiceService {
             judiceId: createdAudiencia.judiceId,
             type:
               createdAudiencia.type === "audiencia" ? "AUDIENCIA" : "PERICIA",
+            variant: createdAudiencia.variant,
             expeditionDate: createdAudiencia.lastModification,
             finalDate: createdAudiencia.date,
             lawsuitId: p.lawsuitId,

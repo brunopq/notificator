@@ -105,12 +105,21 @@ export const movimentationTypes = pgEnum("movimentation_types", [
   /* TODO */
 ])
 
+export const movimentationVariants = pgEnum("movimentation_variants", [
+  "instrucao",
+  "inicial",
+  "una",
+  "conciliacao",
+  "outro"
+])
+
 export const movimentation = pgTable("movimentations", {
   ...judiceObject(),
   lawsuitId: id()
     .references(() => lawsuit.id)
     .notNull(),
   type: movimentationTypes().notNull(),
+  variant: movimentationVariants(),
   expeditionDate: timestamp({
     withTimezone: true,
     mode: "date",

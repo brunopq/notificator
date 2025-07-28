@@ -1,0 +1,2 @@
+CREATE TYPE "public"."movimentation_variants" AS ENUM('instrucao', 'inicial', 'una', 'conciliacao', 'outro');--> statement-breakpoint
+ALTER TABLE "movimentations" ADD COLUMN "variant" "movimentation_variants";

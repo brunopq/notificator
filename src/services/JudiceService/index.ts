@@ -209,6 +209,23 @@ export class JudiceService {
               }
             },
           },
+          // conciliacao, instrucao, inicial
+          variant: {
+            selector: "div.details > strong",
+            value: (el) => {
+              const normalized = $(el)
+                .text()
+                .normalize("NFKD")
+                // biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+
+              if (normalized.includes("audiencia")) {
+                return normalized.replace("audiencia", "").replace("de", "").trim()
+              }
+              return null
+            },
+          },
           lastModification: {
             selector: "div.details",
             value: (el) => {
